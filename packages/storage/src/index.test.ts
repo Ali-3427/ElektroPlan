@@ -145,6 +145,20 @@ describe("storage package", () => {
     storage.close();
   });
 
+  it("round-trips a record with a legitimately all-empty grouping object", () => {
+    const storage = openStorageDatabase({ filename: ":memory:" });
+
+    const written = storage.repositories.records.upsert(
+      createMotorRecord({ id: "rec-empty-grouping", grouping: {} }),
+    );
+    expect(written.grouping).toEqual({});
+
+    const read = storage.repositories.records.getById("rec-empty-grouping");
+    expect(read?.grouping).toEqual({});
+
+    storage.close();
+  });
+
   it("applies migrations before repositories are used", () => {
     const storage = openStorageDatabase({ filename: ":memory:" });
 
