@@ -1,5 +1,5 @@
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL, URL } from "node:url";
 
 import { app, BrowserWindow, ipcMain } from "electron";
 
@@ -13,13 +13,7 @@ const devServerUrl =
 let services: AppServices | null = null;
 
 function resolveBundledEntry(relativePath: string): string {
-  const pathname = new URL(relativePath, import.meta.url).pathname;
-
-  if (process.platform === "win32" && pathname.startsWith("/")) {
-    return pathname.slice(1);
-  }
-
-  return pathname;
+  return fileURLToPath(new URL(relativePath, import.meta.url));
 }
 
 function getPreloadEntry(): string {
