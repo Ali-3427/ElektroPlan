@@ -1,13 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { MaterialAssignment, MaterialCategory, Material } from "../../bridge/types";
 import { getBridge } from "../../bridge/client";
-import { MATERIAL_QUERIES } from "./useMaterialsData";
+import { queryKeys } from "../../query/keys";
 
 export function useMaterialMutations() {
   const qc = useQueryClient();
 
   function invalidate() {
-    return qc.invalidateQueries({ queryKey: ["materials"] });
+    return qc.invalidateQueries({ queryKey: queryKeys.materialsAll });
   }
 
   const upsertCategory = useMutation({
@@ -39,12 +39,12 @@ export function useMaterialMutations() {
   const upsertAssignment = useMutation({
     mutationFn: (assignment: MaterialAssignment) =>
       getBridge().assignments.upsert(assignment),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["assignments"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.assignmentsAll }),
   });
 
   const deleteAssignment = useMutation({
     mutationFn: (id: string) => getBridge().assignments.delete(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["assignments"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.assignmentsAll }),
   });
 
   return {
@@ -57,5 +57,3 @@ export function useMaterialMutations() {
     deleteAssignment,
   };
 }
-
-export { MATERIAL_QUERIES };

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Material, MaterialCategory } from "../../bridge/types";
 import { getBridge } from "../../bridge/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../../query/keys";
 import styles from "./MaterialEditDialog.module.css";
 
 interface BulkEditDialogProps {
@@ -128,7 +129,7 @@ export function BulkEditDialog({
         }
         await bridge.materials.upsert(merged as unknown as Material);
       }
-      await qc.invalidateQueries({ queryKey: ["materials"] });
+      await qc.invalidateQueries({ queryKey: queryKeys.materialsAll });
       onSaved();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Toplu kayıt başarısız.");

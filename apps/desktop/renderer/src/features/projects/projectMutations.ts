@@ -86,7 +86,7 @@ export function useProjectMutations() {
     onSuccess: async () => {
       await Promise.all([
         invalidateProjectsQueries(queryClient),
-        queryClient.invalidateQueries({ queryKey: ["assignments"] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.assignmentsAll }),
       ]);
     },
   });
@@ -96,7 +96,7 @@ export function useProjectMutations() {
     onSuccess: async () => {
       await Promise.all([
         invalidateProjectsQueries(queryClient),
-        queryClient.invalidateQueries({ queryKey: ["assignments"] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.assignmentsAll }),
       ]);
     },
   });
@@ -106,7 +106,7 @@ export function useProjectMutations() {
     onSuccess: async () => {
       await Promise.all([
         invalidateProjectsQueries(queryClient),
-        queryClient.invalidateQueries({ queryKey: ["assignments"] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.assignmentsAll }),
       ]);
     },
   });

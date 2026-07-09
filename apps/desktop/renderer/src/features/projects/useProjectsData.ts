@@ -204,11 +204,10 @@ export function useProjectsData(options?: UseProjectsDataOptions) {
 
   const cableSuggestionQueries = useQueries({
     queries: flatGroups.map((group) => ({
-      queryKey: [
-        "group-cable-suggest",
+      queryKey: queryKeys.groupCableSuggest(
         group.groupId,
         Math.round(group.totalCurrentA * 100),
-      ] as const,
+      ),
       queryFn: () => calcBridge?.groupCableSuggest(group.totalCurrentA) ?? Promise.resolve(null),
       enabled:
         enableCableSuggestions &&

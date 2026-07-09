@@ -17,6 +17,7 @@ import { ManualCurrentForm } from "./components/ManualCurrentForm";
 import { AssignMaterialPopover } from "./AssignMaterialPopover";
 import { getBridge } from "../../bridge/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../../query/keys";
 import styles from "./ProjectQuickPanel.module.css";
 
 interface ProjectQuickPanelProps {
@@ -463,7 +464,7 @@ export function ProjectQuickPanel({
                                             onClick={async () => {
                                               await getBridge().assignments.delete(asg.id);
                                               await qc.invalidateQueries({
-                                                queryKey: ["assignments"],
+                                                queryKey: queryKeys.assignmentsAll,
                                               });
                                             }}
                                             aria-label="Sil"
@@ -496,7 +497,7 @@ export function ProjectQuickPanel({
           anchorRect={assignPopover.anchorRect}
           onClose={() => {
             setAssignPopover(null);
-            void qc.invalidateQueries({ queryKey: ["assignments"] });
+            void qc.invalidateQueries({ queryKey: queryKeys.assignmentsAll });
           }}
         />
       )}

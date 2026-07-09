@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Material, MaterialAssignment, MaterialCategory } from "../../bridge/types";
 import { getBridge } from "../../bridge/client";
+import { queryKeys } from "../../query/keys";
 import { useDebouncedValue } from "../materials/useDebouncedValue";
 import styles from "./AssignMaterialPopover.module.css";
 
@@ -117,7 +118,7 @@ export function AssignMaterialPopover({
           : {}),
       };
       await getBridge().assignments.upsert(assignment);
-      await qc.invalidateQueries({ queryKey: ["assignments"] });
+      await qc.invalidateQueries({ queryKey: queryKeys.assignmentsAll });
       onClose();
     } catch {
       setLoading(false);

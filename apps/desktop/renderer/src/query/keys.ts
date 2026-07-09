@@ -12,4 +12,13 @@ export const queryKeys = {
   groups: ["groups"] as const,
   settings: ["settings"] as const,
   setting: (key: string) => ["settings", key] as const,
+  materialsAll: ["materials"] as const,
+  materialCategories: ["materials", "categories"] as const,
+  materialsList: (filter: { categoryId?: string; search?: string }) =>
+    ["materials", "list", filter] as const,
+  assignmentsAll: ["assignments"] as const,
+  assignmentsForRecords: (sortedRecordIds: readonly string[]) =>
+    ["assignments", sortedRecordIds] as const,
+  groupCableSuggest: (groupId: string, totalCurrentACentiAmps: number) =>
+    ["group-cable-suggest", groupId, totalCurrentACentiAmps] as const,
 };
