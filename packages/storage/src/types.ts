@@ -84,6 +84,7 @@ export interface MaterialsRepository {
 
 export interface MaterialAssignmentsRepository {
   delete(id: string): boolean;
+  getById(id: string): PersistedMaterialAssignment | null;
   listForRecords(recordIds: string[]): PersistedMaterialAssignment[];
   upsert(assignment: MaterialAssignmentUpsertInput): PersistedMaterialAssignment;
 }

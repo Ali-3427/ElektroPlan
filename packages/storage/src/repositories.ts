@@ -1,7 +1,7 @@
 import type { Database as SqliteDatabase, Statement } from "better-sqlite3";
 import type { ZodType } from "zod";
 
-import { calculationsExportSchema } from "./contracts.js";
+import { calculationsExportSchema } from "@elektroplan/contracts";
 import {
   deserializeGroup,
   deserializeMaterial,
@@ -109,6 +109,19 @@ function matchesUnicodeSearch(fields: Array<string | null>, search: string): boo
   });
 }
 
+const GROUP_COLUMNS = `
+  created_at,
+  id,
+  order_value,
+  parent_group_id,
+  tags_json,
+  title,
+  updated_at,
+  version_contract,
+  version_data,
+  version_engine
+`;
+
 export class SqliteGroupsRepository implements GroupsRepository {
   private readonly deleteStatement: Statement<[string]>;
   private readonly selectAllStatement: Statement<[], GroupRow>;
@@ -118,17 +131,7 @@ export class SqliteGroupsRepository implements GroupsRepository {
   public constructor(private readonly database: SqliteDatabase) {
     this.deleteStatement = database.prepare("DELETE FROM groups WHERE id = ?");
     this.selectAllStatement = database.prepare(`
-      SELECT
-        created_at,
-        id,
-        order_value,
-        parent_group_id,
-        tags_json,
-        title,
-        updated_at,
-        version_contract,
-        version_data,
-        version_engine
+      SELECT ${GROUP_COLUMNS}
       FROM groups
       ORDER BY
         COALESCE(parent_group_id, ''),
@@ -137,17 +140,7 @@ export class SqliteGroupsRepository implements GroupsRepository {
         id
     `);
     this.selectByIdStatement = database.prepare(`
-      SELECT
-        created_at,
-        id,
-        order_value,
-        parent_group_id,
-        tags_json,
-        title,
-        updated_at,
-        version_contract,
-        version_data,
-        version_engine
+      SELECT ${GROUP_COLUMNS}
       FROM groups
       WHERE id = ?
     `);
@@ -216,6 +209,26 @@ export class SqliteGroupsRepository implements GroupsRepository {
   }
 }
 
+const RECORD_COLUMNS = `
+  calculator,
+  created_at,
+  grouping_group_id,
+  grouping_group_path_json,
+  grouping_group_title,
+  grouping_order_value,
+  grouping_present,
+  grouping_quantity,
+  grouping_tags_json,
+  id,
+  input_json,
+  output_json,
+  title,
+  updated_at,
+  version_contract,
+  version_data,
+  version_engine
+`;
+
 export class SqliteRecordsRepository implements RecordsRepository {
   private readonly deleteStatement: Statement<[string]>;
   private readonly listAllStatement: Statement<[], RecordRow>;
@@ -226,69 +239,18 @@ export class SqliteRecordsRepository implements RecordsRepository {
   public constructor(private readonly database: SqliteDatabase) {
     this.deleteStatement = database.prepare("DELETE FROM records WHERE id = ?");
     this.listAllStatement = database.prepare(`
-      SELECT
-        calculator,
-        created_at,
-        grouping_group_id,
-        grouping_group_path_json,
-        grouping_group_title,
-        grouping_order_value,
-        grouping_present,
-        grouping_quantity,
-        grouping_tags_json,
-        id,
-        input_json,
-        output_json,
-        title,
-        updated_at,
-        version_contract,
-        version_data,
-        version_engine
+      SELECT ${RECORD_COLUMNS}
       FROM records
       ORDER BY updated_at DESC, id ASC
     `);
     this.listByGroupStatement = database.prepare(`
-      SELECT
-        calculator,
-        created_at,
-        grouping_group_id,
-        grouping_group_path_json,
-        grouping_group_title,
-        grouping_order_value,
-        grouping_present,
-        grouping_quantity,
-        grouping_tags_json,
-        id,
-        input_json,
-        output_json,
-        title,
-        updated_at,
-        version_contract,
-        version_data,
-        version_engine
+      SELECT ${RECORD_COLUMNS}
       FROM records
       WHERE grouping_group_id = ?
       ORDER BY updated_at DESC, id ASC
     `);
     this.selectByIdStatement = database.prepare(`
-      SELECT
-        calculator,
-        created_at,
-        grouping_group_id,
-        grouping_group_path_json,
-        grouping_group_title,
-        grouping_order_value,
-        grouping_present,
-        grouping_quantity,
-        grouping_tags_json,
-        id,
-        input_json,
-        output_json,
-        title,
-        updated_at,
-        version_contract,
-        version_data,
-        version_engine
+      SELECT ${RECORD_COLUMNS}
       FROM records
       WHERE id = ?
     `);
@@ -379,6 +341,15 @@ export class SqliteRecordsRepository implements RecordsRepository {
   }
 }
 
+const MATERIAL_CATEGORY_COLUMNS = `
+  created_at,
+  icon_key,
+  id,
+  order_value,
+  title,
+  updated_at
+`;
+
 export class SqliteMaterialCategoriesRepository implements MaterialCategoriesRepository {
   private readonly deleteStatement: Statement<[string]>;
   private readonly selectAllStatement: Statement<[], MaterialCategoryRow>;
@@ -388,13 +359,7 @@ export class SqliteMaterialCategoriesRepository implements MaterialCategoriesRep
   public constructor(private readonly database: SqliteDatabase) {
     this.deleteStatement = database.prepare("DELETE FROM material_categories WHERE id = ?");
     this.selectAllStatement = database.prepare(`
-      SELECT
-        created_at,
-        icon_key,
-        id,
-        order_value,
-        title,
-        updated_at
+      SELECT ${MATERIAL_CATEGORY_COLUMNS}
       FROM material_categories
       ORDER BY
         CASE WHEN order_value IS NULL THEN 1 ELSE 0 END,
@@ -403,13 +368,7 @@ export class SqliteMaterialCategoriesRepository implements MaterialCategoriesRep
         id ASC
     `);
     this.selectByIdStatement = database.prepare(`
-      SELECT
-        created_at,
-        icon_key,
-        id,
-        order_value,
-        title,
-        updated_at
+      SELECT ${MATERIAL_CATEGORY_COLUMNS}
       FROM material_categories
       WHERE id = ?
     `);
@@ -473,6 +432,24 @@ export class SqliteMaterialCategoriesRepository implements MaterialCategoriesRep
   }
 }
 
+const MATERIAL_COLUMNS = `
+  attributes_json,
+  brand,
+  category_id,
+  created_at,
+  id,
+  model_code,
+  name,
+  notes,
+  order_value,
+  seed_data_version,
+  source,
+  stock_qty,
+  unit,
+  unit_price,
+  updated_at
+`;
+
 export class SqliteMaterialsRepository implements MaterialsRepository {
   private readonly deleteStatement: Statement<[string]>;
   private readonly selectByIdStatement: Statement<[string], MaterialRow>;
@@ -481,22 +458,7 @@ export class SqliteMaterialsRepository implements MaterialsRepository {
   public constructor(private readonly database: SqliteDatabase) {
     this.deleteStatement = database.prepare("DELETE FROM materials WHERE id = ?");
     this.selectByIdStatement = database.prepare(`
-      SELECT
-        attributes_json,
-        brand,
-        category_id,
-        created_at,
-        id,
-        model_code,
-        name,
-        notes,
-        order_value,
-        seed_data_version,
-        source,
-        stock_qty,
-        unit,
-        unit_price,
-        updated_at
+      SELECT ${MATERIAL_COLUMNS}
       FROM materials
       WHERE id = ?
     `);
@@ -582,22 +544,7 @@ export class SqliteMaterialsRepository implements MaterialsRepository {
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
     const statement = this.database.prepare(`
-      SELECT
-        attributes_json,
-        brand,
-        category_id,
-        created_at,
-        id,
-        model_code,
-        name,
-        notes,
-        order_value,
-        seed_data_version,
-        source,
-        stock_qty,
-        unit,
-        unit_price,
-        updated_at
+      SELECT ${MATERIAL_COLUMNS}
       FROM materials
       ${whereClause}
       ORDER BY
@@ -630,6 +577,24 @@ export class SqliteMaterialsRepository implements MaterialsRepository {
   }
 }
 
+const MATERIAL_ASSIGNMENT_COLUMNS = `
+  created_at,
+  id,
+  material_id,
+  order_value,
+  quantity,
+  record_id,
+  snapshot_attributes_json,
+  snapshot_brand,
+  snapshot_category_id,
+  snapshot_category_title,
+  snapshot_model_code,
+  snapshot_name,
+  snapshot_unit_price,
+  unit,
+  updated_at
+`;
+
 export class SqliteMaterialAssignmentsRepository implements MaterialAssignmentsRepository {
   private readonly deleteStatement: Statement<[string]>;
   private readonly selectByIdStatement: Statement<[string], MaterialAssignmentRow>;
@@ -638,22 +603,7 @@ export class SqliteMaterialAssignmentsRepository implements MaterialAssignmentsR
   public constructor(private readonly database: SqliteDatabase) {
     this.deleteStatement = database.prepare("DELETE FROM material_assignments WHERE id = ?");
     this.selectByIdStatement = database.prepare(`
-      SELECT
-        created_at,
-        id,
-        material_id,
-        order_value,
-        quantity,
-        record_id,
-        snapshot_attributes_json,
-        snapshot_brand,
-        snapshot_category_id,
-        snapshot_category_title,
-        snapshot_model_code,
-        snapshot_name,
-        snapshot_unit_price,
-        unit,
-        updated_at
+      SELECT ${MATERIAL_ASSIGNMENT_COLUMNS}
       FROM material_assignments
       WHERE id = ?
     `);
@@ -714,6 +664,11 @@ export class SqliteMaterialAssignmentsRepository implements MaterialAssignmentsR
     return this.deleteStatement.run(id).changes > 0;
   }
 
+  public getById(id: string): PersistedMaterialAssignment | null {
+    const row = this.selectByIdStatement.get(id);
+    return row ? deserializeMaterialAssignment(row) : null;
+  }
+
   public listForRecords(recordIds: string[]): PersistedMaterialAssignment[] {
     if (recordIds.length === 0) {
       return [];
@@ -721,22 +676,7 @@ export class SqliteMaterialAssignmentsRepository implements MaterialAssignmentsR
 
     const placeholders = recordIds.map(() => "?").join(", ");
     const statement = this.database.prepare(`
-      SELECT
-        created_at,
-        id,
-        material_id,
-        order_value,
-        quantity,
-        record_id,
-        snapshot_attributes_json,
-        snapshot_brand,
-        snapshot_category_id,
-        snapshot_category_title,
-        snapshot_model_code,
-        snapshot_name,
-        snapshot_unit_price,
-        unit,
-        updated_at
+      SELECT ${MATERIAL_ASSIGNMENT_COLUMNS}
       FROM material_assignments
       WHERE record_id IN (${placeholders})
       ORDER BY
@@ -761,11 +701,6 @@ export class SqliteMaterialAssignmentsRepository implements MaterialAssignmentsR
     }
 
     return stored;
-  }
-
-  private getById(id: string): PersistedMaterialAssignment | null {
-    const row = this.selectByIdStatement.get(id);
-    return row ? deserializeMaterialAssignment(row) : null;
   }
 }
 

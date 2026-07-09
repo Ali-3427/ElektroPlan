@@ -71,6 +71,10 @@ const migrations: Migration[] = [
     id: 2,
     name: "p2_grouping_quantity",
     up(database) {
+      // Migration 1 already creates records.grouping_quantity for any fresh
+      // database, so this ALTER TABLE always throws "duplicate column name"
+      // there and is a deliberate no-op in that case. It's only meaningful
+      // for a database created before migration 1 included that column.
       try {
         database.exec(`
           ALTER TABLE records
@@ -296,14 +300,15 @@ export function applyMigrations(database: SqliteDatabase): void {
     "INSERT INTO schema_migrations (id, name, applied_at) VALUES (@id, @name, @applied_at)",
   );
 
-  const recordMigration = (migration: Migration) =>
+  function recordMigration(migration: Migration): void {
     insertMigration.run({
       applied_at: new Date().toISOString(),
       id: migration.id,
       name: migration.name,
     });
+  }
 
-  const runWrapped = database.transaction((migration: Migration) => {
+  const runWrapped = database.transaction(function runMigration(migration: Migration) {
     migration.up(database);
     recordMigration(migration);
   });

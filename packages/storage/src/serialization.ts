@@ -1,3 +1,10 @@
+import {
+  calculationGroupSchema,
+  calculationRecordSchema,
+  materialAssignmentSchema,
+  materialCategorySchema,
+  materialSchema,
+} from "@elektroplan/contracts";
 import type {
   CalculationGroup,
   CalculationRecord,
@@ -5,14 +12,6 @@ import type {
   MaterialAssignment,
   MaterialCategory,
 } from "@elektroplan/contracts";
-
-import {
-  calculationGroupSchema,
-  calculationRecordSchema,
-  materialAssignmentSchema,
-  materialCategorySchema,
-  materialSchema,
-} from "./contracts.js";
 import type {
   JsonValue,
   PersistedCalculationGroup,
