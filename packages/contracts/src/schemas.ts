@@ -601,7 +601,7 @@ export const manualCurrentRequestSchema = z
 
 export const manualCurrentResponseSchema = z
   .object({
-    value: z.object({ currentA: z.number() }).strict(),
+    value: z.object({ currentA: z.number().finite().nonnegative() }).strict(),
   })
   .strict();
 

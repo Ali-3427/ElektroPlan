@@ -10,6 +10,7 @@ import {
   materialCategorySchema,
   materialSchema,
   materialUnitSchema,
+  manualCurrentResponseSchema,
   motorFormulaOutputSchema,
   motorResponseSchema,
   motorSuggestedCableSectionSchema,
@@ -668,6 +669,12 @@ calculationRecordSchema.parse({
   input: { currentA: 16, label: "Priz hattı F3" },
   output: { value: { currentA: 16 } },
 });
+
+// manualCurrentResponseSchema — rejects NaN/Infinity/negative currentA, matching the request schema
+assertThrows(() => manualCurrentResponseSchema.parse({ value: { currentA: Number.NaN } }));
+assertThrows(() => manualCurrentResponseSchema.parse({ value: { currentA: Number.POSITIVE_INFINITY } }));
+assertThrows(() => manualCurrentResponseSchema.parse({ value: { currentA: -1 } }));
+assertEqual(manualCurrentResponseSchema.parse({ value: { currentA: 16 } }).value.currentA, 16);
 
 // Material category — minimal parse
 {
