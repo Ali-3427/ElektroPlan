@@ -1,6 +1,9 @@
 import groupingFactorsJson from "./data.json" with { type: "json" };
 
-import { loadJsonDataset } from "../../dataset/load-json-dataset.js";
+import {
+  assertReferenceMetadata,
+  loadJsonDataset,
+} from "../../dataset/load-json-dataset.js";
 import type {
   GroupingFactorDataset,
   GroupingFactorEntry,
@@ -30,13 +33,15 @@ function assertGroupingFactorEntry(
 function assertGroupingFactorDataset(
   dataset: Readonly<GroupingFactorDataset>,
 ): Readonly<GroupingFactorDataset> {
-  if (
-    dataset.metadata.standard !== REQUIRED_STANDARD ||
-    dataset.metadata.revision !== REQUIRED_REVISION ||
-    dataset.metadata.validFrom !== REQUIRED_VALID_FROM
-  ) {
-    throw new Error(`Grouping factor dataset metadata does not match the authoritative reference.`);
-  }
+  assertReferenceMetadata(
+    dataset.metadata,
+    {
+      standard: REQUIRED_STANDARD,
+      revision: REQUIRED_REVISION,
+      validFrom: REQUIRED_VALID_FROM,
+    },
+    "Grouping factor",
+  );
 
   if (!Array.isArray(dataset.entries) || dataset.entries.length === 0) {
     throw new Error(`Grouping factor dataset must contain entries.`);

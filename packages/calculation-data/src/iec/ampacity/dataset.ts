@@ -5,7 +5,10 @@ import copperAmpacityJson from "./copper-xlpe-90c-3loaded.json" with {
   type: "json",
 };
 
-import { loadJsonDataset } from "../../dataset/load-json-dataset.js";
+import {
+  assertReferenceMetadata,
+  loadJsonDataset,
+} from "../../dataset/load-json-dataset.js";
 import {
   INSTALLATION_METHOD_CODES,
   type InstallationMethodCode,
@@ -29,23 +32,15 @@ const AMPACITY_DATASET_PATHS: Record<AmpacityMaterial, string> = {
 };
 
 function assertRequiredMetadata(dataset: Readonly<AmpacityDataset>): void {
-  if (dataset.metadata.standard !== REQUIRED_STANDARD) {
-    throw new Error(
-      `Ampacity dataset '${dataset.metadata.id}' must declare standard '${REQUIRED_STANDARD}'.`,
-    );
-  }
-
-  if (dataset.metadata.revision !== REQUIRED_REVISION) {
-    throw new Error(
-      `Ampacity dataset '${dataset.metadata.id}' must declare revision '${REQUIRED_REVISION}'.`,
-    );
-  }
-
-  if (dataset.metadata.validFrom !== REQUIRED_VALID_FROM) {
-    throw new Error(
-      `Ampacity dataset '${dataset.metadata.id}' must declare validFrom '${REQUIRED_VALID_FROM}'.`,
-    );
-  }
+  assertReferenceMetadata(
+    dataset.metadata,
+    {
+      standard: REQUIRED_STANDARD,
+      revision: REQUIRED_REVISION,
+      validFrom: REQUIRED_VALID_FROM,
+    },
+    `Ampacity dataset '${dataset.metadata.id}'`,
+  );
 }
 
 function assertMethodValues(

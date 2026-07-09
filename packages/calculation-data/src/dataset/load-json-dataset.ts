@@ -30,6 +30,36 @@ export function assertDatasetMetadata(
   assertMetadataString(metadata, "notes", context);
 }
 
+export interface ReferenceMetadata {
+  standard: string;
+  revision: string;
+  validFrom: string;
+}
+
+export function assertReferenceMetadata(
+  metadata: Pick<DatasetMetadata, "standard" | "revision" | "validFrom">,
+  expected: ReferenceMetadata,
+  label: string,
+): void {
+  if (metadata.standard !== expected.standard) {
+    throw new Error(
+      `${label} dataset must declare standard '${expected.standard}'.`,
+    );
+  }
+
+  if (metadata.revision !== expected.revision) {
+    throw new Error(
+      `${label} dataset must declare revision '${expected.revision}'.`,
+    );
+  }
+
+  if (metadata.validFrom !== expected.validFrom) {
+    throw new Error(
+      `${label} dataset must declare validFrom '${expected.validFrom}'.`,
+    );
+  }
+}
+
 function deepFreeze<T>(value: T): Readonly<T> {
   if (Array.isArray(value)) {
     for (const item of value) {

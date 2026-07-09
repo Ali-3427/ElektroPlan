@@ -1,6 +1,9 @@
 import protectionCatalogJson from "./data.json" with { type: "json" };
 
-import { loadJsonDataset } from "../../dataset/load-json-dataset.js";
+import {
+  assertReferenceMetadata,
+  loadJsonDataset,
+} from "../../dataset/load-json-dataset.js";
 import type {
   ProtectionCatalogDataset,
   ProtectionCatalogEntry,
@@ -105,13 +108,15 @@ function assertEntry(
 function assertProtectionCatalogDataset(
   dataset: Readonly<ProtectionCatalogDataset>,
 ): Readonly<ProtectionCatalogDataset> {
-  if (
-    dataset.metadata.standard !== REQUIRED_STANDARD ||
-    dataset.metadata.revision !== REQUIRED_REVISION ||
-    dataset.metadata.validFrom !== REQUIRED_VALID_FROM
-  ) {
-    throw new Error(`Protection catalog dataset metadata does not match the packaged dataset.`);
-  }
+  assertReferenceMetadata(
+    dataset.metadata,
+    {
+      standard: REQUIRED_STANDARD,
+      revision: REQUIRED_REVISION,
+      validFrom: REQUIRED_VALID_FROM,
+    },
+    "Protection catalog",
+  );
 
   if (!Array.isArray(dataset.columns)) {
     throw new Error(`Protection catalog dataset must declare columns.`);
