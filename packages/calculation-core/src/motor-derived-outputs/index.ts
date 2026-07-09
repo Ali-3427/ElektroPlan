@@ -22,6 +22,7 @@ export function calculateMotorDerivedOutputs(
     P_out,
     phase,
     voltage,
+    voltageMode,
     cosPhi,
     efficiencyPercent,
     polesOrRpm,
@@ -52,6 +53,7 @@ export function calculateMotorDerivedOutputs(
     P_out,
     phase,
     voltage,
+    ...(voltageMode === undefined ? {} : { voltageMode }),
     cosPhi,
     efficiencyPercent,
   });
@@ -60,6 +62,7 @@ export function calculateMotorDerivedOutputs(
     value: {
       phase,
       voltage,
+      ...(phase === 3 ? { voltageMode } : {}),
       cosPhi,
       efficiencyPercent,
       P_out,

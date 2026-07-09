@@ -36,4 +36,12 @@ export function validateMotorDerivedOutputsInput(input: MotorDerivedOutputsInput
   assertPositive(input.frequency, "frequency");
   assertInRange(input.cosPhi, 0, 1, "cosPhi");
   assertInRange(input.efficiencyPercent, 1, 100, "efficiencyPercent");
+
+  if (input.phase === 3) {
+    if (input.voltageMode === undefined) {
+      throw new RangeError("voltageMode is required when phase is 3.");
+    }
+
+    assertOneOf(input.voltageMode, ["LL", "LN"] as const, "voltageMode");
+  }
 }

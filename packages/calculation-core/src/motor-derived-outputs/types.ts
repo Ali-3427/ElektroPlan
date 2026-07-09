@@ -1,10 +1,11 @@
 import type { CalculationResult } from "../common/types/result.js";
-import type { MotorPhase } from "../motor/types.js";
+import type { MotorPhase, MotorVoltageMode } from "../motor/types.js";
 
 export interface MotorDerivedOutputsInput {
   P_out?: number;
   phase: MotorPhase;
   voltage?: number;
+  voltageMode?: MotorVoltageMode;
   cosPhi?: number;
   efficiencyPercent?: number;
   polesOrRpm?: number;
@@ -14,6 +15,7 @@ export interface MotorDerivedOutputsInput {
 export interface MotorDerivedOutputsValue {
   phase: MotorPhase;
   voltage: number;
+  voltageMode?: MotorVoltageMode;
   cosPhi: number;
   efficiencyPercent: number;
   P_out: number;

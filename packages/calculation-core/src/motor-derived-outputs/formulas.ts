@@ -1,4 +1,5 @@
 import { SQRT3 } from "../common/constants/index.js";
+import type { MotorVoltageMode } from "../motor/types.js";
 
 const MAX_INFERRED_POLES = 24;
 const RPM_PER_KILOWATT_TO_NEWTON_METER = 9550;
@@ -15,6 +16,7 @@ export function calcDerivedCurrent(input: {
   P_out: number;
   phase: 1 | 3;
   voltage: number;
+  voltageMode?: MotorVoltageMode;
   cosPhi: number;
   efficiencyPercent: number;
 }): number {
@@ -22,6 +24,10 @@ export function calcDerivedCurrent(input: {
 
   if (input.phase === 1) {
     return (1000 * input.P_out) / (input.voltage * efficiency * input.cosPhi);
+  }
+
+  if (input.voltageMode === "LN") {
+    return (1000 * input.P_out) / (3 * input.voltage * efficiency * input.cosPhi);
   }
 
   return (1000 * input.P_out) / (SQRT3 * input.voltage * efficiency * input.cosPhi);
