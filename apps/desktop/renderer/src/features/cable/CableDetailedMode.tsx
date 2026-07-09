@@ -18,6 +18,7 @@ import { ErrorBanner } from "../../ui/ErrorBanner";
 import { Field, fieldGrid } from "../../ui/Field";
 import { NumberInput } from "../../ui/NumberInput";
 import { ResultPanel } from "../../ui/ResultPanel";
+import { ResultRow, resultGrid } from "../../ui/ResultRow";
 import { SaveDialog } from "../../ui/SaveDialog";
 import { Select } from "../../ui/Select";
 import { Spinner } from "../../ui/Spinner";
@@ -643,15 +644,25 @@ export function CableDetailedMode() {
           dataVersion={result.dataVersion}
           onSave={saveRecord ? () => setShowSave(true) : undefined}
         >
-          <div className={styles.resultGrid}>
-            <RRow label="Seçilen Kesit" value={`${formatNumberTr(result.value.selectedSectionMm2, 0)} mm²`} highlight />
-            <RRow label="Düzeltilmiş Ampasiti" value={formatAmp(result.value.correctedAmpacityA, 2)} />
-            <RRow label="kT (Sıcaklık)" value={formatNumberTr(result.value.kT, 4)} />
-            <RRow label="kG (Gruplama)" value={formatNumberTr(result.value.kG, 4)} />
-            <RRow label="kH (Harmonik)" value={formatNumberTr(result.value.kH, 4)} />
-            <RRow label="kTotal" value={formatNumberTr(result.value.kTotal, 4)} />
-            <RRow label="Iz Gereken" value={formatAmp(result.value.izRequiredA, 2)} />
-            <RRow label="Gerilim Düşümü ΔV%" value={formatPercent(result.value.vdResult.value.deltaVPercent, 2)} />
+          <div className={resultGrid}>
+            <ResultRow
+              label="Seçilen Kesit"
+              value={`${formatNumberTr(result.value.selectedSectionMm2, 0)} mm²`}
+              highlight
+            />
+            <ResultRow
+              label="Düzeltilmiş Ampasiti"
+              value={formatAmp(result.value.correctedAmpacityA, 2)}
+            />
+            <ResultRow label="kT (Sıcaklık)" value={formatNumberTr(result.value.kT, 4)} />
+            <ResultRow label="kG (Gruplama)" value={formatNumberTr(result.value.kG, 4)} />
+            <ResultRow label="kH (Harmonik)" value={formatNumberTr(result.value.kH, 4)} />
+            <ResultRow label="kTotal" value={formatNumberTr(result.value.kTotal, 4)} />
+            <ResultRow label="Iz Gereken" value={formatAmp(result.value.izRequiredA, 2)} />
+            <ResultRow
+              label="Gerilim Düşümü ΔV%"
+              value={formatPercent(result.value.vdResult.value.deltaVPercent, 2)}
+            />
           </div>
 
           {result.value.candidateTrace.length > 0 && (
@@ -689,15 +700,6 @@ export function CableDetailedMode() {
       )}
 
       {showSave && saveRecord && <SaveDialog record={saveRecord} onClose={() => setShowSave(false)} />}
-    </div>
-  );
-}
-
-function RRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
-  return (
-    <div className={`${styles.resultRow} ${highlight ? styles.highlight : ""}`}>
-      <span className={styles.resultLabel}>{label}</span>
-      <span className={styles.resultValue}>{value}</span>
     </div>
   );
 }

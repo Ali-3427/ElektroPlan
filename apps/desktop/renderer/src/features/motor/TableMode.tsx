@@ -9,6 +9,7 @@ import { Card } from "../../ui/Card";
 import { ErrorBanner } from "../../ui/ErrorBanner";
 import { Field, fieldGrid } from "../../ui/Field";
 import { ResultPanel } from "../../ui/ResultPanel";
+import { ResultRow, resultGrid } from "../../ui/ResultRow";
 import { SaveDialog } from "../../ui/SaveDialog";
 import { Select } from "../../ui/Select";
 import { Spinner } from "../../ui/Spinner";
@@ -201,12 +202,15 @@ export function TableMode() {
           dataVersion={result.dataVersion}
           onSave={saveRecord ? () => setShowSave(true) : undefined}
         >
-          <div className={styles.resultGrid}>
-            <TRow label="Guc (kW)" value={`${formatNumberTr(result.value.kW, 2)} kW`} />
-            <TRow label="PS" value={`${formatNumberTr(result.value.PS, 2)} PS`} />
-            <TRow label="Cosphi" value={formatNumberTr(result.value.cosPhi, 3)} />
-            <TRow label="%Verim" value={`${formatNumberTr(result.value.efficiencyPercent, 1)} %`} />
-            <TRow
+          <div className={resultGrid}>
+            <ResultRow label="Guc (kW)" value={`${formatNumberTr(result.value.kW, 2)} kW`} />
+            <ResultRow label="PS" value={`${formatNumberTr(result.value.PS, 2)} PS`} />
+            <ResultRow label="Cosphi" value={formatNumberTr(result.value.cosPhi, 3)} />
+            <ResultRow
+              label="%Verim"
+              value={`${formatNumberTr(result.value.efficiencyPercent, 1)} %`}
+            />
+            <ResultRow
               label="Akim (A)"
               value={
                 voltage === 380 && selectedEntry?.currentA_380V === null
@@ -215,7 +219,7 @@ export function TableMode() {
               }
               highlight
             />
-            <TRow label="Kablo" value={result.value.cableSpec} />
+            <ResultRow label="Kablo" value={result.value.cableSpec} />
           </div>
         </ResultPanel>
       ) : null}
@@ -223,15 +227,6 @@ export function TableMode() {
       {showSave && saveRecord ? (
         <SaveDialog record={saveRecord} onClose={() => setShowSave(false)} />
       ) : null}
-    </div>
-  );
-}
-
-function TRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
-  return (
-    <div className={`${styles.resultRow} ${highlight ? styles.highlight : ""}`}>
-      <span className={styles.resultLabel}>{label}</span>
-      <span className={styles.resultValue}>{value}</span>
     </div>
   );
 }

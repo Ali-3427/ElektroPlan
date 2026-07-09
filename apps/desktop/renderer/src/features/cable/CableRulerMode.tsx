@@ -14,6 +14,7 @@ import { ErrorBanner } from "../../ui/ErrorBanner";
 import { Field, fieldGrid } from "../../ui/Field";
 import { NumberInput } from "../../ui/NumberInput";
 import { ResultPanel } from "../../ui/ResultPanel";
+import { ResultRow, resultGrid } from "../../ui/ResultRow";
 import { Select } from "../../ui/Select";
 import { Spinner } from "../../ui/Spinner";
 import { usePersistentPageState } from "../shared/usePersistentPageState";
@@ -171,52 +172,47 @@ export function CableRulerMode() {
           engineVersion={result.engineVersion}
           dataVersion={result.dataVersion}
         >
-          <div className={styles.resultGrid}>
+          <div className={resultGrid}>
             <ResultRow
               label="Seçilen Kesit"
               value={`${result.value.selected.nominal_kesit_mm2} mm²`}
               highlight
+              className={styles.resultRow!}
+              valueClassName={styles.resultValue!}
             />
             <ResultRow
               label="Ampasite"
               value={formatAmp(result.value.selectedAmpacityA, 0)}
+              className={styles.resultRow!}
+              valueClassName={styles.resultValue!}
             />
             <ResultRow
               label="DC Direnç"
               value={`${formatNumberTr(result.value.selected.dc_direnc_ohm_km_20C, 4)} Ω/km`}
+              className={styles.resultRow!}
+              valueClassName={styles.resultValue!}
             />
             <ResultRow
               label="Dış Çap"
               value={`${formatNumberTr(result.value.selected.dis_cap_mm, 1)} mm`}
+              className={styles.resultRow!}
+              valueClassName={styles.resultValue!}
             />
             <ResultRow
               label="Net Ağırlık"
               value={`${formatNumberTr(result.value.selected.net_agirlik_kg_km, 0)} kg/km`}
+              className={styles.resultRow!}
+              valueClassName={styles.resultValue!}
             />
             <ResultRow
               label="Seçim Kaynağı"
               value={`${result.value.selected.nominal_kesit_mm2} etiketi (${result.dataVersion})`}
+              className={styles.resultRow!}
+              valueClassName={styles.resultValue!}
             />
           </div>
         </ResultPanel>
       )}
-    </div>
-  );
-}
-
-function ResultRow({
-  label,
-  value,
-  highlight,
-}: {
-  label: string;
-  value: string;
-  highlight?: boolean;
-}) {
-  return (
-    <div className={`${styles.resultRow} ${highlight ? styles.highlight : ""}`}>
-      <span className={styles.resultLabel}>{label}</span>
-      <span className={styles.resultValue}>{value}</span>
     </div>
   );
 }
