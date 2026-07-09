@@ -293,84 +293,29 @@ export function CableDetailedMode() {
     version: 1,
     defaultValue: () => createDefaultCableDetailedPageState(),
   });
-  const [designCurrentA, setDesignCurrentA] = useState<number | null>(pageState.designCurrentA);
-  const [phase, setPhase] = useState<"1" | "3">(pageState.phase);
-  const [conductorMaterial, setConductorMaterial] = useState<"copper" | "aluminum">(
-    pageState.conductorMaterial,
-  );
-  const [installationMethod, setInstallationMethod] = useState<string>(pageState.installationMethod);
-  const [ambientTemperatureC, setAmbientTemperatureC] = useState<number | null>(
-    pageState.ambientTemperatureC,
-  );
-  const [groupedCircuits, setGroupedCircuits] = useState<number | null>(pageState.groupedCircuits);
-  const [thirdHarmonicPercent, setThirdHarmonicPercent] = useState<number | null>(
-    pageState.thirdHarmonicPercent,
-  );
-  const [voltageDropLimitPercent, setVoltageDropLimitPercent] = useState<number | null>(
-    pageState.voltageDropLimitPercent,
-  );
-  const [systemType, setSystemType] = useState<CableVoltageDropSystemType>(pageState.systemType);
-  const [impedanceMode, setImpedanceMode] = useState<VoltageDropImpedanceMode>(
-    pageState.impedanceMode,
-  );
-  const [lengthM, setLengthM] = useState<number | null>(pageState.lengthM);
-  const [baseVoltageV, setBaseVoltageV] = useState<number | null>(pageState.baseVoltageV);
-  const [cosPhi, setCosPhi] = useState<number | null>(pageState.cosPhi);
-  const [parallelConductors, setParallelConductors] = useState<number | null>(
-    pageState.parallelConductors,
-  );
-  const [conductorTempC, setConductorTempC] = useState<number | null>(pageState.conductorTempC);
-  const [reactanceOhmPerKm, setReactanceOhmPerKm] = useState<number | null>(
-    pageState.reactanceOhmPerKm,
-  );
-  const [result, setResult] = useState<CableResponse | null>(pageState.result);
-  const [lastRequest, setLastRequest] = useState<CableRequest | null>(pageState.lastRequest);
+  const {
+    designCurrentA,
+    phase,
+    conductorMaterial,
+    installationMethod,
+    ambientTemperatureC,
+    groupedCircuits,
+    thirdHarmonicPercent,
+    voltageDropLimitPercent,
+    systemType,
+    impedanceMode,
+    lengthM,
+    baseVoltageV,
+    cosPhi,
+    parallelConductors,
+    conductorTempC,
+    reactanceOhmPerKm,
+    result,
+    lastRequest,
+  } = pageState;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSave, setShowSave] = useState(false);
-
-  useEffect(() => {
-    setPageState({
-      designCurrentA,
-      phase,
-      conductorMaterial,
-      installationMethod,
-      ambientTemperatureC,
-      groupedCircuits,
-      thirdHarmonicPercent,
-      voltageDropLimitPercent,
-      systemType,
-      impedanceMode,
-      lengthM,
-      baseVoltageV,
-      cosPhi,
-      parallelConductors,
-      conductorTempC,
-      reactanceOhmPerKm,
-      result,
-      lastRequest,
-    });
-  }, [
-    ambientTemperatureC,
-    baseVoltageV,
-    conductorMaterial,
-    conductorTempC,
-    cosPhi,
-    designCurrentA,
-    groupedCircuits,
-    impedanceMode,
-    installationMethod,
-    lastRequest,
-    lengthM,
-    parallelConductors,
-    phase,
-    reactanceOhmPerKm,
-    result,
-    setPageState,
-    systemType,
-    thirdHarmonicPercent,
-    voltageDropLimitPercent,
-  ]);
 
   const methodsQuery = useQuery({
     queryKey: queryKeys.installationMethods,
@@ -393,15 +338,17 @@ export function CableDetailedMode() {
   useEffect(() => {
     const methods = methodsQuery.data;
     if (methods && methods.length > 0 && !methods.includes(installationMethod)) {
-      setInstallationMethod(methods[0] ?? "B2");
+      const nextMethod = methods[0] ?? "B2";
+      setPageState((current) => ({ ...current, installationMethod: nextMethod }));
     }
-  }, [methodsQuery.data, installationMethod]);
+  }, [methodsQuery.data, installationMethod, setPageState]);
 
   useEffect(() => {
-    if (defaultProfileQuery.data && voltageDropLimitPercent === null) {
-      setVoltageDropLimitPercent(defaultProfileQuery.data.limitPercent);
+    const defaultLimitPercent = defaultProfileQuery.data?.limitPercent;
+    if (defaultLimitPercent !== undefined && voltageDropLimitPercent === null) {
+      setPageState((current) => ({ ...current, voltageDropLimitPercent: defaultLimitPercent }));
     }
-  }, [defaultProfileQuery.data, voltageDropLimitPercent]);
+  }, [defaultProfileQuery.data, voltageDropLimitPercent, setPageState]);
 
   const methods: readonly string[] = methodsQuery.data ?? ["A1", "A2", "B1", "B2", "C", "D", "E"];
   const methodOptions = methods.map((method) => ({
@@ -460,8 +407,12 @@ export function CableDetailedMode() {
         ...response,
         assumptions: mergeAssumptions(response.assumptions, submission.assumptions),
       };
-      setResult(merged);
-      setLastRequest(submission.request);
+      const submittedRequest = submission.request;
+      setPageState((current) => ({
+        ...current,
+        result: merged,
+        lastRequest: submittedRequest,
+      }));
     } catch (caughtError) {
       setError(
         caughtError instanceof Error ? caughtError.message : "Hesaplama hatası.",
@@ -505,22 +456,39 @@ export function CableDetailedMode() {
             <Field label="Tasarım Akımı (A)" required>
               <NumberInput
                 value={designCurrentA}
-                onChange={setDesignCurrentA}
+                onChange={(next) => setPageState((current) => ({ ...current, designCurrentA: next }))}
                 placeholder={examplePlaceholder(CALCULATOR_EXAMPLE_DEFAULTS.cable.designCurrentA)}
               />
             </Field>
             <Field label="Faz">
-              <Select value={phase} onChange={(value) => setPhase(value as "1" | "3")} options={PHASE_OPTIONS} />
+              <Select
+                value={phase}
+                onChange={(value) =>
+                  setPageState((current) => ({ ...current, phase: value as "1" | "3" }))
+                }
+                options={PHASE_OPTIONS}
+              />
             </Field>
             <Field label="İletken Malzeme">
               <Select
                 value={conductorMaterial}
-                onChange={(value) => setConductorMaterial(value as "copper" | "aluminum")}
+                onChange={(value) =>
+                  setPageState((current) => ({
+                    ...current,
+                    conductorMaterial: value as "copper" | "aluminum",
+                  }))
+                }
                 options={MATERIAL_OPTIONS}
               />
             </Field>
             <Field label="Montaj Yöntemi">
-              <Select value={installationMethod} onChange={setInstallationMethod} options={methodOptions} />
+              <Select
+                value={installationMethod}
+                onChange={(value) =>
+                  setPageState((current) => ({ ...current, installationMethod: value }))
+                }
+                options={methodOptions}
+              />
             </Field>
             <Field label="İzolasyon">
               <input type="text" className={styles.readonly} value="XLPE/EPR" readOnly />
@@ -528,21 +496,27 @@ export function CableDetailedMode() {
             <Field label="Ortam Sıcaklığı (°C)" required>
               <NumberInput
                 value={ambientTemperatureC}
-                onChange={setAmbientTemperatureC}
+                onChange={(next) =>
+                  setPageState((current) => ({ ...current, ambientTemperatureC: next }))
+                }
                 placeholder={examplePlaceholder(CALCULATOR_EXAMPLE_DEFAULTS.cable.ambientTemperatureC)}
               />
             </Field>
             <Field label="Devre Gruplandırma" required>
               <NumberInput
                 value={groupedCircuits}
-                onChange={setGroupedCircuits}
+                onChange={(next) =>
+                  setPageState((current) => ({ ...current, groupedCircuits: next }))
+                }
                 placeholder={examplePlaceholder(CALCULATOR_EXAMPLE_DEFAULTS.cable.groupedCircuits)}
               />
             </Field>
             <Field label="3. Harmonik (%)" required>
               <NumberInput
                 value={thirdHarmonicPercent}
-                onChange={setThirdHarmonicPercent}
+                onChange={(next) =>
+                  setPageState((current) => ({ ...current, thirdHarmonicPercent: next }))
+                }
                 placeholder={examplePlaceholder(CALCULATOR_EXAMPLE_DEFAULTS.cable.thirdHarmonicPercent)}
               />
             </Field>
@@ -550,13 +524,20 @@ export function CableDetailedMode() {
               {profileOptions.length > 0 ? (
                 <Select
                   value={voltageDropLimitPercent !== null ? String(voltageDropLimitPercent) : ""}
-                  onChange={(value) => setVoltageDropLimitPercent(parseFloat(value))}
+                  onChange={(value) =>
+                    setPageState((current) => ({
+                      ...current,
+                      voltageDropLimitPercent: parseFloat(value),
+                    }))
+                  }
                   options={profileOptions}
                 />
               ) : (
                 <NumberInput
                   value={voltageDropLimitPercent}
-                  onChange={setVoltageDropLimitPercent}
+                  onChange={(next) =>
+                    setPageState((current) => ({ ...current, voltageDropLimitPercent: next }))
+                  }
                   placeholder={examplePlaceholder(CALCULATOR_EXAMPLE_DEFAULTS.cable.voltageDropLimitPercent)}
                 />
               )}
@@ -570,49 +551,63 @@ export function CableDetailedMode() {
             <Field label="Sistem Tipi">
               <Select
                 value={systemType}
-                onChange={(value) => setSystemType(value as CableVoltageDropSystemType)}
+                onChange={(value) =>
+                  setPageState((current) => ({
+                    ...current,
+                    systemType: value as CableVoltageDropSystemType,
+                  }))
+                }
                 options={SYSTEM_TYPE_OPTIONS}
               />
             </Field>
             <Field label="Empedans Modu">
               <Select
                 value={impedanceMode}
-                onChange={(value) => setImpedanceMode(value as VoltageDropImpedanceMode)}
+                onChange={(value) =>
+                  setPageState((current) => ({
+                    ...current,
+                    impedanceMode: value as VoltageDropImpedanceMode,
+                  }))
+                }
                 options={IMPEDANCE_MODE_OPTIONS}
               />
             </Field>
             <Field label="Uzunluk (m)" required>
               <NumberInput
                 value={lengthM}
-                onChange={setLengthM}
+                onChange={(next) => setPageState((current) => ({ ...current, lengthM: next }))}
                 placeholder={examplePlaceholder(CALCULATOR_EXAMPLE_DEFAULTS.voltageDrop.lengthM)}
               />
             </Field>
             <Field label="Nominal Gerilim (V)" required>
               <NumberInput
                 value={baseVoltageV}
-                onChange={setBaseVoltageV}
+                onChange={(next) => setPageState((current) => ({ ...current, baseVoltageV: next }))}
                 placeholder={examplePlaceholder(CALCULATOR_EXAMPLE_DEFAULTS.voltageDrop.baseVoltageV)}
               />
             </Field>
             <Field label="cosφ (isteğe bağlı)">
               <NumberInput
                 value={cosPhi}
-                onChange={setCosPhi}
+                onChange={(next) => setPageState((current) => ({ ...current, cosPhi: next }))}
                 placeholder={examplePlaceholder(CALCULATOR_EXAMPLE_DEFAULTS.voltageDrop.cosPhi)}
               />
             </Field>
             <Field label="Paralel İletken (isteğe bağlı)">
               <NumberInput
                 value={parallelConductors}
-                onChange={setParallelConductors}
+                onChange={(next) =>
+                  setPageState((current) => ({ ...current, parallelConductors: next }))
+                }
                 placeholder={examplePlaceholder(CALCULATOR_EXAMPLE_DEFAULTS.voltageDrop.parallelConductors)}
               />
             </Field>
             <Field label="İletken Sıcaklık °C (isteğe bağlı)">
               <NumberInput
                 value={conductorTempC}
-                onChange={setConductorTempC}
+                onChange={(next) =>
+                  setPageState((current) => ({ ...current, conductorTempC: next }))
+                }
                 placeholder={examplePlaceholder(CALCULATOR_EXAMPLE_DEFAULTS.voltageDrop.conductorTempC)}
               />
             </Field>
@@ -620,7 +615,9 @@ export function CableDetailedMode() {
               <Field label="Reaktans (Ω/km) (exact-ac)">
                 <NumberInput
                   value={reactanceOhmPerKm}
-                  onChange={setReactanceOhmPerKm}
+                  onChange={(next) =>
+                    setPageState((current) => ({ ...current, reactanceOhmPerKm: next }))
+                  }
                   placeholder={examplePlaceholder(CALCULATOR_EXAMPLE_DEFAULTS.voltageDrop.reactanceOhmPerKm)}
                 />
               </Field>
