@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
 
-import { openStorageDatabase, type StorageDatabase } from "@elektroplan/storage";
+import { openStorageDatabase } from "@elektroplan/storage";
 
 import {
   createCalculateService,
@@ -33,7 +33,6 @@ export interface AppServices {
   readonly settings: SettingsService;
   readonly export: ExportService;
   readonly materials: MaterialsService;
-  readonly storage: StorageDatabase;
   close(): void;
 }
 
@@ -54,7 +53,6 @@ export function createServices(options: CreateServicesOptions): AppServices {
     settings: createSettingsService(storage.repositories.settings),
     export: createExportService(),
     materials: createMaterialsService(storage.repositories),
-    storage,
     close(): void {
       storage.close();
     },

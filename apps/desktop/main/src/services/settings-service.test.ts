@@ -59,3 +59,47 @@ describe("SettingsService key validation", () => {
     db.close();
   });
 });
+
+describe("SettingsService setSetting value validation", () => {
+  it("accepts nested JSON-serializable values without a cast at the call site", () => {
+    const { db, service } = newService();
+
+    const stored = service.setSetting("layout", {
+      panels: ["left", "right"],
+      widths: [240, null, 320],
+      collapsed: false,
+    });
+
+    assert.deepEqual(stored.value, {
+      panels: ["left", "right"],
+      widths: [240, null, 320],
+      collapsed: false,
+    });
+
+    db.close();
+  });
+
+  it("rejects a value that isn't JSON-serializable (e.g. a function) from an untrusted caller", () => {
+    const { db, service } = newService();
+    const untrusted: unknown = () => "not json";
+
+    assert.throws(
+      () => service.setSetting("theme", untrusted),
+      /Setting value must be a JSON-serializable value\./,
+    );
+
+    db.close();
+  });
+
+  it("rejects undefined as a value from an untrusted caller", () => {
+    const { db, service } = newService();
+    const untrusted: unknown = undefined;
+
+    assert.throws(
+      () => service.setSetting("theme", untrusted),
+      /Setting value must be a JSON-serializable value\./,
+    );
+
+    db.close();
+  });
+});

@@ -1,10 +1,9 @@
-import { randomUUID } from "node:crypto";
-
 import { ENGINE_VERSION } from "@elektroplan/calculation-core";
 import { app, dialog, type IpcMain, type IpcMainInvokeEvent } from "electron";
 
 import type { AppServices } from "../services/index.js";
 import { IPC_CHANNELS, type IpcEnvelope } from "./channels.js";
+import { createExcelImportHandleStore } from "./excel-import-handles.js";
 
 type Handler = (
   event: IpcMainInvokeEvent,
@@ -98,7 +97,7 @@ function assertOptionalGroupId(payload: unknown): string | undefined {
     }
     return candidate;
   }
-  throw new TypeError("records:list payload must be an object or undefined.");
+  throw new TypeError("Payload must be an object or undefined.");
 }
 
 function assertSettingSetPayload(payload: unknown): {
@@ -154,7 +153,7 @@ export function registerIpcHandlers(
   services: AppServices,
   securityOptions: IpcSecurityOptions,
 ): void {
-  const excelImportHandles = new Map<string, string>();
+  const excelImportHandles = createExcelImportHandleStore();
 
   secureHandle(
     ipcMain,
@@ -319,7 +318,7 @@ export function registerIpcHandlers(
     securityOptions,
     (_event, payload) => {
       const { key, value } = assertSettingSetPayload(payload);
-      return services.settings.setSetting(key, value as never);
+      return services.settings.setSetting(key, value);
     },
   );
   secureHandle(
@@ -395,12 +394,11 @@ export function registerIpcHandlers(
         throw new Error("Excel import handle is missing, expired, or invalid.");
       }
 
-      const resolvedPath = excelImportHandles.get(filePath);
+      const resolvedPath = excelImportHandles.resolve(filePath);
       if (resolvedPath === undefined) {
         throw new Error("Excel import handle is missing, expired, or invalid.");
       }
 
-      excelImportHandles.delete(filePath);
       return services.materials.importExcel({ filePath: resolvedPath, mode });
     },
   );
@@ -419,9 +417,7 @@ export function registerIpcHandlers(
         return null;
       }
 
-      const importHandle = randomUUID();
-      excelImportHandles.set(importHandle, selectedPath);
-      return importHandle;
+      return excelImportHandles.create(selectedPath);
     },
   );
   secureHandle(
