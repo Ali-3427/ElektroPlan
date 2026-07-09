@@ -118,8 +118,11 @@ app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
-  closeServices();
-
+  // Do not close services here: on darwin the app process stays alive after
+  // all windows close, and a later "activate" would reopen a window whose
+  // already-registered IPC handlers still reference the closed database.
+  // Services are torn down once, on "before-quit", matching actual app
+  // lifetime.
   if (process.platform !== "darwin") {
     app.quit();
   }
