@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { CalculationRecord, MotorResponse, MotorTableEntryDto } from "../../bridge/types";
 import { getBridge, isBridgeAvailable } from "../../bridge/client";
@@ -43,6 +43,7 @@ export function TableMode() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSave, setShowSave] = useState(false);
+  const requestSeq = useRef(0);
 
   useEffect(() => {
     if (entries.length > 0 && selectedKw === null) {
@@ -63,6 +64,7 @@ export function TableMode() {
   }, [setPageState, volt380Disabled, voltage]);
 
   async function handleCalc(kw: number, nextVoltage: 220 | 380) {
+    const requestId = ++requestSeq.current;
     setLoading(true);
     setError(null);
     try {
@@ -71,11 +73,14 @@ export function TableMode() {
         kW: kw,
         voltage: nextVoltage,
       });
+      if (requestSeq.current !== requestId) return;
       setPageState((current) => ({ ...current, result: response }));
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Hesaplama hatasi.");
     } finally {
-      setLoading(false);
+      if (requestSeq.current === requestId) {
+        setLoading(false);
+      }
     }
   }
 

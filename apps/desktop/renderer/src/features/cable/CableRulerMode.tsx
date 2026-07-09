@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type {
   CableRulerAmbient,
@@ -65,6 +65,7 @@ export function CableRulerMode() {
   const { designCurrentA, ambient, result } = pageState;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const requestSeq = useRef(0);
 
   const rulerTableQuery = useQuery({
     queryKey: queryKeys.cableRulerTable,
@@ -81,6 +82,7 @@ export function CableRulerMode() {
       return;
     }
 
+    const requestId = ++requestSeq.current;
     setLoading(true);
     setError(null);
 
@@ -89,8 +91,10 @@ export function CableRulerMode() {
         designCurrentA,
         ambient,
       });
+      if (requestSeq.current !== requestId) return;
       setPageState((current) => ({ ...current, result: response }));
     } catch (caughtError) {
+      if (requestSeq.current !== requestId) return;
       setPageState((current) => ({ ...current, result: null }));
       if (caughtError instanceof Error && /No cable ruler row/i.test(caughtError.message)) {
         setError("Bu akım için ruler aralığında kesit yok.");
@@ -100,7 +104,9 @@ export function CableRulerMode() {
         );
       }
     } finally {
-      setLoading(false);
+      if (requestSeq.current === requestId) {
+        setLoading(false);
+      }
     }
   }
 

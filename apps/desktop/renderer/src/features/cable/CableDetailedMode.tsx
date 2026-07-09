@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type {
   AssumptionEntry,
@@ -317,6 +317,7 @@ export function CableDetailedMode() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSave, setShowSave] = useState(false);
+  const requestSeq = useRef(0);
 
   const methodsQuery = useQuery({
     queryKey: queryKeys.installationMethods,
@@ -399,11 +400,13 @@ export function CableDetailedMode() {
       return;
     }
 
+    const requestId = ++requestSeq.current;
     setLoading(true);
     setError(null);
 
     try {
       const response = await getBridge().calc.cable(submission.request);
+      if (requestSeq.current !== requestId) return;
       const merged: CableResponse = {
         ...response,
         assumptions: mergeAssumptions(response.assumptions, submission.assumptions),
@@ -419,7 +422,9 @@ export function CableDetailedMode() {
         caughtError instanceof Error ? caughtError.message : "Hesaplama hatası.",
       );
     } finally {
-      setLoading(false);
+      if (requestSeq.current === requestId) {
+        setLoading(false);
+      }
     }
   }
 
