@@ -49,6 +49,20 @@ function nowIso(): string {
   return new Date().toISOString();
 }
 
+function isForeignKeyConstraintError(error: unknown): boolean {
+  if (!(error instanceof Error) || !("code" in error)) {
+    return false;
+  }
+
+  // SQLite reports a plain FK violation as SQLITE_CONSTRAINT_FOREIGNKEY, but an
+  // `ON DELETE RESTRICT` violation specifically is enforced via an internal
+  // trigger and surfaces as SQLITE_CONSTRAINT_TRIGGER instead. Both carry the
+  // same "FOREIGN KEY constraint failed" message, so match on both signals
+  // rather than a single sub-code.
+  const code = (error as { code?: unknown }).code;
+  return typeof code === "string" && code.startsWith("SQLITE_CONSTRAINT") && error.message.includes("FOREIGN KEY");
+}
+
 const SEARCH_LOCALES = ["und", "tr"];
 const COMBINING_MARKS_PATTERN = /\p{M}+/gu;
 const NUMERIC_SEPARATOR_PATTERN = /[.,]/g;
@@ -420,7 +434,14 @@ export class SqliteMaterialCategoriesRepository implements MaterialCategoriesRep
   }
 
   public delete(id: string): boolean {
-    return this.deleteStatement.run(id).changes > 0;
+    try {
+      return this.deleteStatement.run(id).changes > 0;
+    } catch (error) {
+      if (isForeignKeyConstraintError(error)) {
+        return false;
+      }
+      throw error;
+    }
   }
 
   public getById(id: string): PersistedMaterialCategory | null {
