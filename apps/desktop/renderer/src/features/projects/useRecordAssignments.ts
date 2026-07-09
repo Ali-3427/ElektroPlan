@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getBridge } from "../../bridge/client";
+import { getBridge, isBridgeAvailable } from "../../bridge/client";
 import { queryKeys } from "../../query/keys";
 
 export function useRecordAssignments(recordIds: readonly string[]) {
@@ -10,6 +10,6 @@ export function useRecordAssignments(recordIds: readonly string[]) {
       recordIds.length
         ? getBridge().assignments.listForRecords([...recordIds])
         : Promise.resolve([]),
-    enabled: recordIds.length > 0,
+    enabled: isBridgeAvailable() && recordIds.length > 0,
   });
 }

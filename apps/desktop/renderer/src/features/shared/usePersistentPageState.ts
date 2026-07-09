@@ -51,7 +51,7 @@ function readStoredValue<T>(options: PersistentPageStateOptions<T>): T {
 
 export function usePersistentPageState<T>(
   options: PersistentPageStateOptions<T>,
-): [T, Dispatch<SetStateAction<T>>, () => void] {
+): [T, Dispatch<SetStateAction<T>>] {
   const stableOptions = useMemo(() => options, [options.key, options.version]);
   const [value, setValue] = useState<T>(() => readStoredValue(stableOptions));
 
@@ -67,15 +67,5 @@ export function usePersistentPageState<T>(
     }
   }, [stableOptions.key, stableOptions.version, value]);
 
-  const reset = () => {
-    const next = resolveDefault(stableOptions.defaultValue);
-    setValue(next);
-    try {
-      window.localStorage.removeItem(stableOptions.key);
-    } catch {
-      // ignore storage failures
-    }
-  };
-
-  return [value, setValue, reset];
+  return [value, setValue];
 }
