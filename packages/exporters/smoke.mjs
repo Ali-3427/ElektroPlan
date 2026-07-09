@@ -130,4 +130,45 @@ assert.match(pdfText, /^%PDF-1\.4/);
 assert.match(pdfText, /Calculation Summary/);
 assert.match(pdfText, /15\.20 A/);
 
+// Regression: /Length must be the UTF-8 byte count of the stream content, not the
+// JS string's UTF-16 code-unit count. Turkish characters (ğ, ş, ı, ö, ü, ç) take
+// more bytes than code units, so this only fails if the byte-length bug regresses.
+const pdfWithTurkishText = exportPresentationToPdf({
+  title: "Hesaplama Özeti",
+  subtitle: "Şebeke gerilim düşümü",
+  records: [
+    {
+      id: "cable-1",
+      calculator: "cable",
+      title: "Öğütücü Besleme Hattı",
+      sections: [
+        {
+          title: "Girdiler",
+          rows: [
+            { label: "İletken Malzeme", value: "Bakır" },
+            { label: "Döşeme Yöntemi", value: "Hava üzeri, gölgeli ortam" },
+          ],
+        },
+      ],
+    },
+  ],
+});
+const rawPdfBytes = Buffer.from(pdfWithTurkishText.data).toString("latin1");
+const streamRegex = /<< \/Length (\d+) >>\nstream\n([\s\S]*?)\nendstream/g;
+let turkishStreamMatch;
+let checkedAtLeastOneStream = false;
+
+while ((turkishStreamMatch = streamRegex.exec(rawPdfBytes)) !== null) {
+  checkedAtLeastOneStream = true;
+  const declaredLength = Number(turkishStreamMatch[1]);
+  const actualByteLength = turkishStreamMatch[2].length;
+  assert.equal(
+    declaredLength,
+    actualByteLength,
+    `/Length ${declaredLength} does not match actual stream byte length ${actualByteLength}`,
+  );
+}
+
+assert.ok(checkedAtLeastOneStream, "expected at least one PDF content stream to check");
+
 console.log("exporters smoke tests passed");

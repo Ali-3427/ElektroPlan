@@ -187,7 +187,7 @@ export function exportPresentationToPdf(document: PdfPresentationDocument): PdfE
   pages.forEach((page, index) => {
     const content = buildContentStream(page.lines);
     const contentObjectId = contentObjectIds[index]!;
-    const stream = `<< /Length ${content.length} >>\nstream\n${content}\nendstream`;
+    const stream = `<< /Length ${encodeUtf8(content).length} >>\nstream\n${content}\nendstream`;
     objects[contentObjectId] = createPdfObject(contentObjectId, stream);
   });
 
