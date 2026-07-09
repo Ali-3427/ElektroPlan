@@ -8,10 +8,13 @@ export function assertInRange(
   value: number,
   min: number,
   max: number,
-  name: string
+  name: string,
+  options?: { readonly exclusiveMin?: boolean }
 ): void {
-  if (!Number.isFinite(value) || value < min || value > max) {
-    throw new RangeError(`${name} must be between ${min} and ${max}.`);
+  const violatesMin = options?.exclusiveMin ? value <= min : value < min;
+  if (!Number.isFinite(value) || violatesMin || value > max) {
+    const suffix = options?.exclusiveMin ? ` (exclusive of ${min})` : "";
+    throw new RangeError(`${name} must be between ${min} and ${max}${suffix}.`);
   }
 }
 

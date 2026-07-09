@@ -178,7 +178,19 @@ describe("calculateMotorCurrent formula mode", () => {
         cosPhi: 1.01,
         efficiencyPercent: 75,
       },
-      message: "cosPhi must be between 0 and 1.",
+      message: "cosPhi must be between 0 and 1 (exclusive of 0).",
+    },
+    {
+      label: "cosPhi is zero",
+      input: {
+        mode: "formula" as const,
+        phase: 1 as const,
+        P_out: 1.1,
+        voltage: 220,
+        cosPhi: 0,
+        efficiencyPercent: 75,
+      },
+      message: "cosPhi must be between 0 and 1 (exclusive of 0).",
     },
     {
       label: "fractional efficiency percent",

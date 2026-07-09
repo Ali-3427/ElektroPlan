@@ -41,9 +41,8 @@ export function validateFormulaModeInput(input: FormulaModeInput): void {
 
   assertPositive(input.P_out, "P_out");
   assertPositive(input.voltage, "voltage");
-  assertPositive(input.cosPhi, "cosPhi");
   assertPositive(input.efficiencyPercent, "efficiencyPercent");
-  assertInRange(input.cosPhi, 0, 1, "cosPhi");
+  assertInRange(input.cosPhi, 0, 1, "cosPhi", { exclusiveMin: true });
   assertInRange(input.efficiencyPercent, 1, 100, "efficiencyPercent");
 
   if (input.phase === 3) {

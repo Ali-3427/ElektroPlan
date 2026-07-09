@@ -201,7 +201,20 @@ describe("calculateMotorDerivedOutputs", () => {
         polesOrRpm: 4,
         frequency: 50,
       },
-      message: "cosPhi must be between 0 and 1.",
+      message: "cosPhi must be between 0 and 1 (exclusive of 0).",
+    },
+    {
+      label: "cosPhi is zero",
+      input: {
+        P_out: 1.1,
+        phase: 1 as const,
+        voltage: 220,
+        cosPhi: 0,
+        efficiencyPercent: 75,
+        polesOrRpm: 4,
+        frequency: 50,
+      },
+      message: "cosPhi must be between 0 and 1 (exclusive of 0).",
     },
     {
       label: "ratio-like efficiencyPercent",
