@@ -1,69 +1,20 @@
-import type {
-  CableRequest,
-  CableResponse,
-  CalculationGroup,
-  CalculationRecord,
-  MotorRequest,
-  MotorResponse,
-  ProtectionRequest,
-  ProtectionResponse,
-  VoltageDropGroupRequest,
-  VoltageDropGroupResponse,
-  VoltageDropRequest,
-  VoltageDropResponse,
+import {
+  IPC_CHANNELS as CHANNELS,
+  type CableRequest,
+  type CableResponse,
+  type CalculationGroup,
+  type CalculationRecord,
+  type IpcEnvelope,
+  type MotorRequest,
+  type MotorResponse,
+  type ProtectionRequest,
+  type ProtectionResponse,
+  type VoltageDropGroupRequest,
+  type VoltageDropGroupResponse,
+  type VoltageDropRequest,
+  type VoltageDropResponse,
 } from "@elektroplan/contracts";
 import { contextBridge, ipcRenderer } from "electron";
-
-type IpcEnvelope<TValue> =
-  | { readonly ok: true; readonly value: TValue }
-  | {
-      readonly ok: false;
-      readonly error: { readonly code: string; readonly message: string };
-    };
-
-// IMPORTANT: These channel strings must stay in sync with apps/desktop/main/src/ipc/channels.ts
-const CHANNELS = Object.freeze({
-  CalcMotor: "calc:motor",
-  CalcVoltageDrop: "calc:vd",
-  CalcVoltageDropGroup: "calc:vd-group",
-  CalcCable: "calc:cable",
-  CalcCableRuler: "calc:cable-ruler",
-  CalcGroupCableSuggest: "calc:group-cable-suggest",
-  CalcProtection: "calc:protection",
-  DataMotorTable: "data:motor-table",
-  DataCableRulerTable: "data:cable-ruler-table",
-  DataVoltageDropProfiles: "data:vd-profiles",
-  DataDefaultVoltageDropProfile: "data:vd-default-profile",
-  DataInstallationMethods: "data:installation-methods",
-  RecordsList: "records:list",
-  RecordsGet: "records:get",
-  RecordsSave: "records:save",
-  RecordsDelete: "records:delete",
-  GroupsList: "groups:list",
-  GroupsSave: "groups:save",
-  GroupsDelete: "groups:delete",
-  GroupsDuplicate: "groups:duplicate",
-  ExportJson: "export:json",
-  ExportExcel: "export:excel",
-  ExportPdf: "export:pdf",
-  SettingsGet: "settings:get",
-  SettingsSet: "settings:set",
-  SettingsList: "settings:list",
-  SettingsDelete: "settings:delete",
-  AppEngineVersion: "app:engine-version",
-  AppVersion: "app:version",
-  MaterialsListCategories: "materials:list-categories",
-  MaterialsUpsertCategory: "materials:upsert-category",
-  MaterialsDeleteCategory: "materials:delete-category",
-  MaterialsList: "materials:list",
-  MaterialsUpsert: "materials:upsert",
-  MaterialsDelete: "materials:delete",
-  MaterialsImportExcel: "materials:import-excel",
-  MaterialsPickExcel: "materials:pick-excel",
-  AssignmentsListForRecords: "assignments:list-for-records",
-  AssignmentsUpsert: "assignments:upsert",
-  AssignmentsDelete: "assignments:delete",
-} as const);
 
 async function invoke<TResult>(
   channel: string,
