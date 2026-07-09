@@ -1,35 +1,23 @@
-import { SQRT3 } from "../common/constants/index.js";
+import {
+  calcCurrentFromPowerKW,
+  type PowerToCurrentPhaseMode,
+} from "../common/power-to-current.js";
 import type { VoltageDropInput, VoltageDropSystemType } from "./types.js";
 
-function calcSinglePhaseCurrentFromPower(
-  powerKW: number,
-  baseVoltageV: number,
-  cosPhi: number,
-): number {
-  return (1000 * powerKW) / (baseVoltageV * cosPhi);
-}
+function toPhaseMode(systemType: VoltageDropSystemType): PowerToCurrentPhaseMode {
+  if (systemType === "dc-two-conductor") {
+    return "dc";
+  }
 
-function calcDCCurrentFromPower(
-  powerKW: number,
-  baseVoltageV: number,
-): number {
-  return (1000 * powerKW) / baseVoltageV;
-}
+  if (systemType === "single-phase-ac-two-conductor") {
+    return "single-phase";
+  }
 
-function calcThreePhaseLineLineCurrentFromPower(
-  powerKW: number,
-  baseVoltageV: number,
-  cosPhi: number,
-): number {
-  return (1000 * powerKW) / (SQRT3 * baseVoltageV * cosPhi);
-}
+  if (systemType === "three-phase-ac-ll") {
+    return "three-phase-ll";
+  }
 
-function calcThreePhaseLineNeutralCurrentFromPower(
-  powerKW: number,
-  baseVoltageV: number,
-  cosPhi: number,
-): number {
-  return (1000 * powerKW) / (3 * baseVoltageV * cosPhi);
+  return "three-phase-ln";
 }
 
 export function calculateCurrentFromPower(
@@ -38,23 +26,16 @@ export function calculateCurrentFromPower(
   baseVoltageV: number,
   cosPhi?: number,
 ): number {
-  if (systemType === "dc-two-conductor") {
-    return calcDCCurrentFromPower(powerKW, baseVoltageV);
-  }
-
-  if (cosPhi === undefined) {
+  if (systemType !== "dc-two-conductor" && cosPhi === undefined) {
     throw new RangeError("cosPhi is required for AC power mode.");
   }
 
-  if (systemType === "single-phase-ac-two-conductor") {
-    return calcSinglePhaseCurrentFromPower(powerKW, baseVoltageV, cosPhi);
-  }
-
-  if (systemType === "three-phase-ac-ll") {
-    return calcThreePhaseLineLineCurrentFromPower(powerKW, baseVoltageV, cosPhi);
-  }
-
-  return calcThreePhaseLineNeutralCurrentFromPower(powerKW, baseVoltageV, cosPhi);
+  return calcCurrentFromPowerKW({
+    phaseMode: toPhaseMode(systemType),
+    powerKW,
+    voltageV: baseVoltageV,
+    ...(cosPhi === undefined ? {} : { cosPhi }),
+  });
 }
 
 export function deriveCurrentForVoltageDrop(input: VoltageDropInput): number {

@@ -3,8 +3,8 @@ import {
   ALPHA_COPPER_20,
   RHO_ALUMINUM_20,
   RHO_COPPER_20,
-  SQRT3,
 } from "../common/constants/index.js";
+import { calcCurrentFromPowerKW } from "../common/power-to-current.js";
 import {
   getAmpacityTable,
   getGroupFactor,
@@ -96,12 +96,13 @@ function calculateCurrentA(
   settings: SegmentResolvedSettings,
   baseVoltageV: number,
 ): number {
-  const efficiency = settings.efficiencyPercent / 100;
-  const denominator =
-    settings.voltageType === "three"
-      ? SQRT3 * baseVoltageV * settings.cosPhi * efficiency
-      : baseVoltageV * settings.cosPhi * efficiency;
-  return (flowPowerKW * 1000) / denominator;
+  return calcCurrentFromPowerKW({
+    phaseMode: settings.voltageType === "three" ? "three-phase-ll" : "single-phase",
+    powerKW: flowPowerKW,
+    voltageV: baseVoltageV,
+    cosPhi: settings.cosPhi,
+    efficiencyPercent: settings.efficiencyPercent,
+  });
 }
 
 export function calculateLegacyDropPercent(input: {
