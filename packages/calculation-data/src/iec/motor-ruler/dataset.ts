@@ -1,6 +1,9 @@
 import standardMotorsJson from "./standard-motors.json" with { type: "json" };
 
-import { loadJsonDataset } from "../../dataset/load-json-dataset.js";
+import {
+  assertColumnsMatchSchema,
+  loadJsonDataset,
+} from "../../dataset/load-json-dataset.js";
 import {
   MOTOR_TABLE_COLUMNS,
   type MotorTableDataset,
@@ -54,14 +57,11 @@ function assertMotorTableDataset(
     throw new Error(`Motor table columns must be an array.`);
   }
 
-  if (
-    dataset.columns.length !== MOTOR_TABLE_COLUMNS.length ||
-    dataset.columns.some((column, index) => column !== MOTOR_TABLE_COLUMNS[index])
-  ) {
-    throw new Error(
-      `Motor table columns do not match the locked plan in ${MOTOR_TABLE_DATASET_PATH}.`,
-    );
-  }
+  assertColumnsMatchSchema(
+    dataset.columns,
+    MOTOR_TABLE_COLUMNS,
+    `Motor table columns in ${MOTOR_TABLE_DATASET_PATH}`,
+  );
 
   if (!Array.isArray(dataset.entries)) {
     throw new Error(`Motor table entries must be an array.`);

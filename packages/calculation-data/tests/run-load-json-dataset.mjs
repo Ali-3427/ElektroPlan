@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 
-import { assertReferenceMetadata } from "../dist/index.js";
+import {
+  assertAscending,
+  assertColumnsMatchSchema,
+  assertReferenceMetadata,
+} from "../dist/index.js";
 
 const expected = {
   standard: "IEC 60364-5-52",
@@ -44,6 +48,30 @@ assert.doesNotThrow(() =>
     expected,
     "ampacity",
   ),
+);
+
+assert.throws(
+  () => assertAscending([1, 2, 2, 3], "test entries"),
+  /ascending/,
+);
+assert.throws(
+  () => assertAscending([3, 2, 1], "test entries"),
+  /ascending/,
+);
+assert.doesNotThrow(() => assertAscending([1, 2, 3, 4], "test entries"));
+assert.doesNotThrow(() => assertAscending([], "test entries"));
+assert.doesNotThrow(() => assertAscending([1], "test entries"));
+
+assert.throws(
+  () => assertColumnsMatchSchema(["a", "b"], ["a", "b", "c"], "test columns"),
+  /test columns/,
+);
+assert.throws(
+  () => assertColumnsMatchSchema(["a", "x", "c"], ["a", "b", "c"], "test columns"),
+  /test columns/,
+);
+assert.doesNotThrow(() =>
+  assertColumnsMatchSchema(["a", "b", "c"], ["a", "b", "c"], "test columns"),
 );
 
 console.log("load-json-dataset assertion helper tests passed.");

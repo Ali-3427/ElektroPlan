@@ -1,6 +1,9 @@
 import rulerJson from "./standard-cable-ruler.json" with { type: "json" };
 
-import { loadJsonDataset } from "../../dataset/load-json-dataset.js";
+import {
+  assertColumnsMatchSchema,
+  loadJsonDataset,
+} from "../../dataset/load-json-dataset.js";
 import {
   CABLE_RULER_COLUMNS,
   type CableRulerDataset,
@@ -82,14 +85,11 @@ function assertCableRulerDataset(
     throw new Error(`Cable ruler columns must be an array.`);
   }
 
-  if (
-    dataset.columns.length !== CABLE_RULER_COLUMNS.length ||
-    dataset.columns.some((column, index) => column !== CABLE_RULER_COLUMNS[index])
-  ) {
-    throw new Error(
-      `Cable ruler columns do not match the locked plan in ${CABLE_RULER_DATASET_PATH}.`,
-    );
-  }
+  assertColumnsMatchSchema(
+    dataset.columns,
+    CABLE_RULER_COLUMNS,
+    `Cable ruler columns in ${CABLE_RULER_DATASET_PATH}`,
+  );
 
   if (!Array.isArray(dataset.entries)) {
     throw new Error(`Cable ruler entries must be an array.`);

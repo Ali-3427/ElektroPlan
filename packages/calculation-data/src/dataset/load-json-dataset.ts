@@ -60,6 +60,31 @@ export function assertReferenceMetadata(
   }
 }
 
+export function assertAscending(
+  values: readonly number[],
+  label: string,
+): void {
+  for (const [index, value] of values.entries()) {
+    const previous = values[index - 1];
+    if (index > 0 && previous !== undefined && value <= previous) {
+      throw new Error(`${label} must be strictly ascending.`);
+    }
+  }
+}
+
+export function assertColumnsMatchSchema<T>(
+  columns: readonly T[],
+  expected: readonly T[],
+  label: string,
+): void {
+  if (
+    columns.length !== expected.length ||
+    columns.some((column, index) => column !== expected[index])
+  ) {
+    throw new Error(`${label} do not match the expected schema.`);
+  }
+}
+
 function deepFreeze<T>(value: T): Readonly<T> {
   if (Array.isArray(value)) {
     for (const item of value) {

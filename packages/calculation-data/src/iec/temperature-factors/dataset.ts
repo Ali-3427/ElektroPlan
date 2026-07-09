@@ -1,6 +1,7 @@
 import temperatureFactorsJson from "./data.json" with { type: "json" };
 
 import {
+  assertAscending,
   assertReferenceMetadata,
   loadJsonDataset,
 } from "../../dataset/load-json-dataset.js";
@@ -30,7 +31,7 @@ function assertEntries(
   entries: readonly TemperatureFactorEntry[],
   label: string,
 ): void {
-  let previousTemperature: number | undefined;
+  const temperatures: number[] = [];
 
   for (const [index, entry] of entries.entries()) {
     if (typeof entry !== "object" || entry === null) {
@@ -45,15 +46,10 @@ function assertEntries(
       throw new Error(`Temperature factor ${label} entry ${index} is invalid.`);
     }
 
-    if (
-      previousTemperature !== undefined &&
-      entry.temperatureC <= previousTemperature
-    ) {
-      throw new Error(`Temperature factor ${label} entries must be strictly ascending.`);
-    }
-
-    previousTemperature = entry.temperatureC;
+    temperatures.push(entry.temperatureC);
   }
+
+  assertAscending(temperatures, `Temperature factor ${label} entries`);
 }
 
 function assertTemperatureFactorDataset(
