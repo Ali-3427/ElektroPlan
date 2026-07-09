@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   assertAscending,
   assertColumnsMatchSchema,
+  assertExpectedRowCount,
   assertReferenceMetadata,
 } from "../dist/index.js";
 
@@ -73,5 +74,15 @@ assert.throws(
 assert.doesNotThrow(() =>
   assertColumnsMatchSchema(["a", "b", "c"], ["a", "b", "c"], "test columns"),
 );
+
+assert.throws(
+  () => assertExpectedRowCount(17, 18, "test rows"),
+  /test rows/,
+);
+assert.throws(
+  () => assertExpectedRowCount(18, undefined, "test rows"),
+  /expectedRowCount/,
+);
+assert.doesNotThrow(() => assertExpectedRowCount(18, 18, "test rows"));
 
 console.log("load-json-dataset assertion helper tests passed.");

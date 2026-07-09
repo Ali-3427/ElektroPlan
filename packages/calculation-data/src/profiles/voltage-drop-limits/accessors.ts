@@ -29,7 +29,3 @@ export function getProfileById(
 ): VoltageDropProfile | undefined {
   return voltageDropProfilesDataset.profiles.find((p) => p.id === id);
 }
-
-export function getVoltageDropDataVersion(): string {
-  return voltageDropProfilesDataset.metadata.revision;
-}

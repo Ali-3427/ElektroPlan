@@ -4,6 +4,7 @@ export {
   assertAscending,
   assertColumnsMatchSchema,
   assertDatasetMetadata,
+  assertExpectedRowCount,
   assertReferenceMetadata,
   loadJsonDataset,
 } from "./load-json-dataset.js";

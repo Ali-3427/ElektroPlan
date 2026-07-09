@@ -28,6 +28,13 @@ export function assertDatasetMetadata(
   assertMetadataString(metadata, "source", context);
   assertMetadataString(metadata, "validFrom", context);
   assertMetadataString(metadata, "notes", context);
+
+  if (
+    metadata.expectedRowCount !== undefined &&
+    typeof metadata.expectedRowCount !== "number"
+  ) {
+    throw new Error(`Invalid dataset metadata 'expectedRowCount' in ${context}.`);
+  }
 }
 
 export interface ReferenceMetadata {
@@ -69,6 +76,20 @@ export function assertAscending(
     if (index > 0 && previous !== undefined && value <= previous) {
       throw new Error(`${label} must be strictly ascending.`);
     }
+  }
+}
+
+export function assertExpectedRowCount(
+  actual: number,
+  expectedRowCount: number | undefined,
+  label: string,
+): void {
+  if (typeof expectedRowCount !== "number") {
+    throw new Error(`${label} dataset metadata must declare 'expectedRowCount'.`);
+  }
+
+  if (actual !== expectedRowCount) {
+    throw new Error(`${label} row count must be ${expectedRowCount}.`);
   }
 }
 

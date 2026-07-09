@@ -5,7 +5,8 @@
     "revision": "v1",
     "source": "locked project dataset (master plan §2.6)",
     "validFrom": "2026-04-19",
-    "notes": "23 rows. '—' values preserved as JSON null. Do NOT interpolate."
+    "notes": "23 rows. '—' values preserved as JSON null. Do NOT interpolate.",
+    "expectedRowCount": 23
   },
   "columns": [
     "kW",

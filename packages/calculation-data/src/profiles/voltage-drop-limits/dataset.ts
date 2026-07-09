@@ -10,7 +10,6 @@ import {
 
 const VOLTAGE_DROP_PROFILES_DATASET_PATH =
   "packages/calculation-data/src/profiles/voltage-drop-limits/profiles.json";
-const EXPECTED_PROFILE_COUNT = 4;
 
 function isValidProfileId(value: unknown): value is VoltageDropProfileId {
   return (
@@ -51,9 +50,9 @@ function assertDataset(
   if (!Array.isArray(dataset.profiles)) {
     throw new Error(`VD profiles must be an array.`);
   }
-  if (dataset.profiles.length !== EXPECTED_PROFILE_COUNT) {
+  if (dataset.profiles.length !== VOLTAGE_DROP_PROFILE_IDS.length) {
     throw new Error(
-      `VD profile count must be ${EXPECTED_PROFILE_COUNT} in ${VOLTAGE_DROP_PROFILES_DATASET_PATH}.`,
+      `VD profile count must be ${VOLTAGE_DROP_PROFILE_IDS.length} in '${dataset.metadata.id}'.`,
     );
   }
   dataset.profiles.forEach((p, i) => assertProfile(p, i));

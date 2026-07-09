@@ -2,6 +2,7 @@ import standardMotorsJson from "./standard-motors.json" with { type: "json" };
 
 import {
   assertColumnsMatchSchema,
+  assertExpectedRowCount,
   loadJsonDataset,
 } from "../../dataset/load-json-dataset.js";
 import {
@@ -12,7 +13,6 @@ import {
 
 const MOTOR_TABLE_DATASET_PATH =
   "packages/calculation-data/src/iec/motor-ruler/standard-motors.json";
-const MOTOR_TABLE_EXPECTED_ROW_COUNT = 23;
 
 function assertMotorTableEntry(
   entry: unknown,
@@ -60,18 +60,18 @@ function assertMotorTableDataset(
   assertColumnsMatchSchema(
     dataset.columns,
     MOTOR_TABLE_COLUMNS,
-    `Motor table columns in ${MOTOR_TABLE_DATASET_PATH}`,
+    `Motor table columns in '${dataset.metadata.id}'`,
   );
 
   if (!Array.isArray(dataset.entries)) {
     throw new Error(`Motor table entries must be an array.`);
   }
 
-  if (dataset.entries.length !== MOTOR_TABLE_EXPECTED_ROW_COUNT) {
-    throw new Error(
-      `Motor table row count must be ${MOTOR_TABLE_EXPECTED_ROW_COUNT} in ${MOTOR_TABLE_DATASET_PATH}.`,
-    );
-  }
+  assertExpectedRowCount(
+    dataset.entries.length,
+    dataset.metadata.expectedRowCount,
+    `Motor table '${dataset.metadata.id}'`,
+  );
 
   dataset.entries.forEach((entry, index) => {
     assertMotorTableEntry(entry, index);
