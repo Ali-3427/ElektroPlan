@@ -6,7 +6,7 @@ import {
   X_AC_FALLBACK_OHM_PER_KM,
 } from "../common/constants/index.js";
 import type { AssumptionEntry } from "../common/types/result.js";
-import { assertInRange, assertOneOf, assertPositive } from "../common/validation/guards.js";
+import { assertOneOf, assertPositive } from "../common/validation/guards.js";
 import {
   calcDCTwoConductorVoltageDrop,
   calcSinglePhaseACTwoConductorVoltageDrop,

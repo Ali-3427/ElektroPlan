@@ -1,6 +1,8 @@
 import {
   ALPHA_ALUMINUM_20,
   ALPHA_COPPER_20,
+  LEGACY_DROP_PERCENT_MULTIPLIER_SINGLE_PHASE,
+  LEGACY_DROP_PERCENT_MULTIPLIER_THREE_PHASE,
   RHO_ALUMINUM_20,
   RHO_COPPER_20,
 } from "../common/constants/index.js";
@@ -113,7 +115,10 @@ export function calculateLegacyDropPercent(input: {
   readonly conductivity: number;
   readonly areaMm2: number;
 }): number {
-  const multiplier = input.phaseMode === "three-phase" ? 100 : 200;
+  const multiplier =
+    input.phaseMode === "three-phase"
+      ? LEGACY_DROP_PERCENT_MULTIPLIER_THREE_PHASE
+      : LEGACY_DROP_PERCENT_MULTIPLIER_SINGLE_PHASE;
   return (
     (multiplier * input.powerKW * 1000 * input.lengthM) /
     (input.conductivity * input.areaMm2 * input.voltageV * input.voltageV)

@@ -166,7 +166,7 @@ function normalizeGroupSegmentsToTree(
 
   return segments.map((segment, index) => {
     const parentId = explicitTopology
-      ? (index === 0 ? (segment.parentId ?? null) : (segment.parentId ?? null))
+      ? segment.parentId ?? null
       : (index === 0 ? null : normalizedIds[index - 1] ?? null);
     const loadPowerKW = segment.loadPowerKW ?? segment.localPowerKW;
     if (loadPowerKW === undefined) {

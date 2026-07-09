@@ -7,3 +7,5 @@ export const X_AC_FALLBACK_OHM_PER_KM = 0.08;
 export const J_REF_COPPER = 4;
 export const J_REF_ALUMINUM = 2.5;
 export const HP_TO_KW = 0.7457;
+export const LEGACY_DROP_PERCENT_MULTIPLIER_THREE_PHASE = 100;
+export const LEGACY_DROP_PERCENT_MULTIPLIER_SINGLE_PHASE = 200;
