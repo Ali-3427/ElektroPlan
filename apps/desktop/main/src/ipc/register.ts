@@ -101,40 +101,6 @@ function assertOptionalGroupId(payload: unknown): string | undefined {
   throw new TypeError("records:list payload must be an object or undefined.");
 }
 
-function assertIdPayload(payload: unknown): string {
-  if (typeof payload === "string") {
-    if (payload.length === 0) {
-      throw new TypeError("id must be a non-empty string.");
-    }
-    return payload;
-  }
-  if (typeof payload === "object" && payload !== null) {
-    const candidate = (payload as { id?: unknown }).id;
-    if (typeof candidate !== "string" || candidate.length === 0) {
-      throw new TypeError("Payload must include a non-empty `id` string.");
-    }
-    return candidate;
-  }
-  throw new TypeError("Payload must be a string id or { id } object.");
-}
-
-function assertKeyPayload(payload: unknown): string {
-  if (typeof payload === "string") {
-    if (payload.length === 0) {
-      throw new TypeError("key must be a non-empty string.");
-    }
-    return payload;
-  }
-  if (typeof payload === "object" && payload !== null) {
-    const candidate = (payload as { key?: unknown }).key;
-    if (typeof candidate !== "string" || candidate.length === 0) {
-      throw new TypeError("Payload must include a non-empty `key` string.");
-    }
-    return candidate;
-  }
-  throw new TypeError("Payload must be a string key or { key } object.");
-}
-
 function assertSettingSetPayload(payload: unknown): {
   key: string;
   value: unknown;
@@ -152,73 +118,35 @@ function assertSettingSetPayload(payload: unknown): {
   return { key, value };
 }
 
-function assertDuplicateGroupPayload(payload: unknown): {
-  newTitle: string;
-  sourceGroupId: string;
+/**
+ * Pulls the `sourceGroupId`/`newTitle` fields off an IPC payload without
+ * validating them — shape extraction only. `records.duplicateGroup` is the
+ * single validation boundary; it throws for non-string/blank values.
+ */
+function extractDuplicateGroupPayload(payload: unknown): {
+  newTitle: unknown;
+  sourceGroupId: unknown;
 } {
-  if (typeof payload !== "object" || payload === null) {
-    throw new TypeError("groups:duplicate payload must be an object.");
-  }
-
-  const { newTitle, sourceGroupId } = payload as {
+  const candidate = (payload ?? {}) as {
     newTitle?: unknown;
     sourceGroupId?: unknown;
   };
-
-  if (typeof sourceGroupId !== "string" || sourceGroupId.length === 0) {
-    throw new TypeError(
-      "groups:duplicate payload must include a non-empty `sourceGroupId`.",
-    );
-  }
-
-  if (typeof newTitle !== "string" || newTitle.trim().length === 0) {
-    throw new TypeError(
-      "groups:duplicate payload must include a non-empty `newTitle`.",
-    );
-  }
-
-  return { newTitle, sourceGroupId };
+  return { newTitle: candidate.newTitle, sourceGroupId: candidate.sourceGroupId };
 }
 
-function assertGroupTotalCurrentPayload(payload: unknown): number {
-  if (typeof payload === "number" && Number.isFinite(payload)) {
-    return payload;
-  }
-
-  if (typeof payload === "object" && payload !== null) {
-    const candidate = (payload as { groupTotalCurrentA?: unknown }).groupTotalCurrentA;
-    if (typeof candidate === "number" && Number.isFinite(candidate)) {
-      return candidate;
-    }
-  }
-
-  throw new TypeError(
-    "calc:group-cable-suggest payload must include a finite `groupTotalCurrentA` number.",
-  );
-}
-
-function assertMaterialsImportPayload(payload: unknown): {
-  filePath: string;
-  mode: "merge";
+/**
+ * Pulls `filePath`/`mode` off an IPC payload without validating them — shape
+ * extraction only, needed to look up the resolved path behind the opaque
+ * import handle. `materials.importExcel` is the single validation boundary
+ * for `mode`; an invalid/missing `filePath` naturally misses the handle map
+ * below and produces the same error as before.
+ */
+function extractMaterialsImportPayload(payload: unknown): {
+  filePath: unknown;
+  mode: unknown;
 } {
-  if (typeof payload !== "object" || payload === null) {
-    throw new TypeError("materials:import-excel payload must be an object.");
-  }
-
-  const { filePath, mode } = payload as {
-    filePath?: unknown;
-    mode?: unknown;
-  };
-
-  if (typeof filePath !== "string" || filePath.length === 0) {
-    throw new TypeError("materials:import-excel payload must include a non-empty `filePath`.");
-  }
-
-  if (mode !== "merge") {
-    throw new TypeError("materials:import-excel payload must include mode='merge'.");
-  }
-
-  return { filePath, mode };
+  const candidate = (payload ?? {}) as { filePath?: unknown; mode?: unknown };
+  return { filePath: candidate.filePath, mode: candidate.mode };
 }
 
 export function registerIpcHandlers(
@@ -262,8 +190,7 @@ export function registerIpcHandlers(
     ipcMain,
     IPC_CHANNELS.CalcGroupCableSuggest,
     securityOptions,
-    (_event, payload) =>
-      services.calculate.runGroupCableSuggest(assertGroupTotalCurrentPayload(payload)),
+    (_event, payload) => services.calculate.runGroupCableSuggest(payload),
   );
   secureHandle(
     ipcMain,
@@ -318,7 +245,7 @@ export function registerIpcHandlers(
     ipcMain,
     IPC_CHANNELS.RecordsGet,
     securityOptions,
-    (_event, payload) => services.records.getRecord(assertIdPayload(payload)),
+    (_event, payload) => services.records.getRecord(payload),
   );
   secureHandle(
     ipcMain,
@@ -330,8 +257,7 @@ export function registerIpcHandlers(
     ipcMain,
     IPC_CHANNELS.RecordsDelete,
     securityOptions,
-    (_event, payload) =>
-      services.records.deleteRecord(assertIdPayload(payload)),
+    (_event, payload) => services.records.deleteRecord(payload),
   );
 
   secureHandle(
@@ -350,15 +276,14 @@ export function registerIpcHandlers(
     ipcMain,
     IPC_CHANNELS.GroupsDelete,
     securityOptions,
-    (_event, payload) =>
-      services.records.deleteGroup(assertIdPayload(payload)),
+    (_event, payload) => services.records.deleteGroup(payload),
   );
   secureHandle(
     ipcMain,
     IPC_CHANNELS.GroupsDuplicate,
     securityOptions,
     (_event, payload) => {
-      const { newTitle, sourceGroupId } = assertDuplicateGroupPayload(payload);
+      const { newTitle, sourceGroupId } = extractDuplicateGroupPayload(payload);
       return services.records.duplicateGroup(sourceGroupId, newTitle);
     },
   );
@@ -386,7 +311,7 @@ export function registerIpcHandlers(
     ipcMain,
     IPC_CHANNELS.SettingsGet,
     securityOptions,
-    (_event, payload) => services.settings.getSetting(assertKeyPayload(payload)),
+    (_event, payload) => services.settings.getSetting(payload),
   );
   secureHandle(
     ipcMain,
@@ -407,8 +332,7 @@ export function registerIpcHandlers(
     ipcMain,
     IPC_CHANNELS.SettingsDelete,
     securityOptions,
-    (_event, payload) =>
-      services.settings.deleteSetting(assertKeyPayload(payload)),
+    (_event, payload) => services.settings.deleteSetting(payload),
   );
 
   secureHandle(
@@ -466,9 +390,12 @@ export function registerIpcHandlers(
     IPC_CHANNELS.MaterialsImportExcel,
     securityOptions,
     async (_event, payload) => {
-      const { filePath, mode } = assertMaterialsImportPayload(payload);
-      const resolvedPath = excelImportHandles.get(filePath);
+      const { filePath, mode } = extractMaterialsImportPayload(payload);
+      if (typeof filePath !== "string") {
+        throw new Error("Excel import handle is missing, expired, or invalid.");
+      }
 
+      const resolvedPath = excelImportHandles.get(filePath);
       if (resolvedPath === undefined) {
         throw new Error("Excel import handle is missing, expired, or invalid.");
       }

@@ -5,10 +5,10 @@ import type {
 } from "@elektroplan/storage";
 
 export interface SettingsService {
-  getSetting(key: string): StorageSetting | null;
+  getSetting(key: unknown): StorageSetting | null;
   setSetting(key: string, value: JsonValue): StorageSetting;
   listSettings(): readonly StorageSetting[];
-  deleteSetting(key: string): boolean;
+  deleteSetting(key: unknown): boolean;
 }
 
 function assertKey(key: unknown): asserts key is string {

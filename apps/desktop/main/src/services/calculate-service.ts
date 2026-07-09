@@ -53,13 +53,28 @@ export interface CalculateService {
   runVoltageDropGroup(request: unknown): VoltageDropGroupResult;
   runCable(request: unknown): CableSizingResult;
   runCableRuler(request: unknown): CableRulerResponse;
-  runGroupCableSuggest(groupTotalCurrentA: number): GroupCableSuggestionResult;
+  runGroupCableSuggest(payload: unknown): GroupCableSuggestionResult;
   runProtection(request: unknown): readonly ProtectionDeviceCandidate[];
   listCableRulerEntries(): readonly CableRulerEntry[];
   listMotorTableEntries(): readonly MotorTableEntry[];
   listVoltageDropProfiles(): readonly VoltageDropProfile[];
   getDefaultVoltageDropProfile(): VoltageDropProfile;
   getInstallationMethods(): readonly InstallationMethodCode[];
+}
+
+function extractGroupTotalCurrentA(payload: unknown): number {
+  if (typeof payload === "number" && Number.isFinite(payload)) {
+    return payload;
+  }
+
+  if (typeof payload === "object" && payload !== null) {
+    const candidate = (payload as { groupTotalCurrentA?: unknown }).groupTotalCurrentA;
+    if (typeof candidate === "number" && Number.isFinite(candidate)) {
+      return candidate;
+    }
+  }
+
+  throw new TypeError("groupTotalCurrentA must be a finite number.");
 }
 
 function stripUndefined<T extends Record<string, unknown>>(value: T): T {
@@ -167,11 +182,8 @@ export function createCalculateService(): CalculateService {
         dataVersion: selection.dataVersion,
       };
     },
-    runGroupCableSuggest(groupTotalCurrentA: number): GroupCableSuggestionResult {
-      if (!Number.isFinite(groupTotalCurrentA)) {
-        throw new TypeError("groupTotalCurrentA must be a finite number.");
-      }
-
+    runGroupCableSuggest(payload: unknown): GroupCableSuggestionResult {
+      const groupTotalCurrentA = extractGroupTotalCurrentA(payload);
       return suggestGroupCableSections({ groupTotalCurrentA });
     },
     runProtection(request: unknown): readonly ProtectionDeviceCandidate[] {

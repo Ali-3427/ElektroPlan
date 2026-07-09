@@ -18,13 +18,13 @@ export interface ListRecordsOptions {
 
 export interface RecordsService {
   listRecords(options?: ListRecordsOptions): readonly PersistedCalculationRecord[];
-  getRecord(id: string): PersistedCalculationRecord | null;
+  getRecord(id: unknown): PersistedCalculationRecord | null;
   saveRecord(record: unknown): PersistedCalculationRecord;
-  deleteRecord(id: string): boolean;
+  deleteRecord(id: unknown): boolean;
   listGroups(): readonly PersistedCalculationGroup[];
   saveGroup(group: unknown): PersistedCalculationGroup;
-  duplicateGroup(sourceGroupId: string, newTitle: string): PersistedCalculationGroup;
-  deleteGroup(id: string): boolean;
+  duplicateGroup(sourceGroupId: unknown, newTitle: unknown): PersistedCalculationGroup;
+  deleteGroup(id: unknown): boolean;
 }
 
 function cloneGroupingForDuplicate(
@@ -65,7 +65,7 @@ export function createRecordsService(
       }
       return records.list();
     },
-    getRecord(id: string) {
+    getRecord(id: unknown) {
       if (typeof id !== "string" || id.length === 0) {
         throw new TypeError("Record id must be a non-empty string.");
       }
@@ -75,7 +75,7 @@ export function createRecordsService(
       const parsed: CalculationRecord = calculationRecordSchema.parse(record);
       return records.upsert(parsed);
     },
-    deleteRecord(id: string) {
+    deleteRecord(id: unknown) {
       if (typeof id !== "string" || id.length === 0) {
         throw new TypeError("Record id must be a non-empty string.");
       }
@@ -88,7 +88,7 @@ export function createRecordsService(
       const parsed: CalculationGroup = calculationGroupSchema.parse(group);
       return groups.upsert(parsed);
     },
-    duplicateGroup(sourceGroupId: string, newTitle: string) {
+    duplicateGroup(sourceGroupId: unknown, newTitle: unknown) {
       if (typeof sourceGroupId !== "string" || sourceGroupId.length === 0) {
         throw new TypeError("sourceGroupId must be a non-empty string.");
       }
@@ -139,7 +139,7 @@ export function createRecordsService(
         return duplicatedGroup;
       });
     },
-    deleteGroup(id: string) {
+    deleteGroup(id: unknown) {
       if (typeof id !== "string" || id.length === 0) {
         throw new TypeError("Group id must be a non-empty string.");
       }
