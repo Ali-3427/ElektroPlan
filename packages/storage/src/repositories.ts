@@ -189,13 +189,9 @@ export class SqliteGroupsRepository implements GroupsRepository {
   }
 
   public upsert(group: GroupUpsertInput): PersistedCalculationGroup {
-    const current = this.getById(group.id);
     const timestamp = nowIso();
     const row = serializeGroup(group, timestamp);
-    this.upsertStatement.run({
-      ...row,
-      created_at: current?.createdAt ?? row.created_at,
-    });
+    this.upsertStatement.run(row);
 
     const stored = this.getById(group.id);
     if (stored === null) {
@@ -350,13 +346,9 @@ export class SqliteRecordsRepository implements RecordsRepository {
   }
 
   public upsert(record: RecordUpsertInput): PersistedCalculationRecord {
-    const current = this.getById(record.id);
     const timestamp = nowIso();
     const row = serializeRecord(record, timestamp);
-    this.upsertStatement.run({
-      ...row,
-      created_at: current?.createdAt ?? row.created_at,
-    });
+    this.upsertStatement.run(row);
 
     const stored = this.getById(record.id);
     if (stored === null) {
@@ -441,13 +433,9 @@ export class SqliteMaterialCategoriesRepository implements MaterialCategoriesRep
   }
 
   public upsert(category: MaterialCategoryUpsertInput): PersistedMaterialCategory {
-    const current = this.getById(category.id);
     const timestamp = nowIso();
     const row = serializeMaterialCategory(category, timestamp);
-    this.upsertStatement.run({
-      ...row,
-      created_at: current?.createdAt ?? row.created_at,
-    });
+    this.upsertStatement.run(row);
 
     const stored = this.getById(category.id);
     if (stored === null) {
@@ -602,13 +590,9 @@ export class SqliteMaterialsRepository implements MaterialsRepository {
   }
 
   public upsert(material: MaterialUpsertInput): PersistedMaterial {
-    const current = this.getById(material.id);
     const timestamp = nowIso();
     const row = serializeMaterial(material, timestamp);
-    this.upsertStatement.run({
-      ...row,
-      created_at: current?.createdAt ?? row.created_at,
-    });
+    this.upsertStatement.run(row);
 
     const stored = this.getById(material.id);
     if (stored === null) {
@@ -740,13 +724,9 @@ export class SqliteMaterialAssignmentsRepository implements MaterialAssignmentsR
   }
 
   public upsert(assignment: MaterialAssignmentUpsertInput): PersistedMaterialAssignment {
-    const current = this.getById(assignment.id);
     const timestamp = nowIso();
     const row = serializeMaterialAssignment(assignment, timestamp);
-    this.upsertStatement.run({
-      ...row,
-      created_at: current?.createdAt ?? row.created_at,
-    });
+    this.upsertStatement.run(row);
 
     const stored = this.getById(assignment.id);
     if (stored === null) {
@@ -819,11 +799,10 @@ export class SqliteSettingsRepository implements SettingsRepository {
   }
 
   public set<TValue extends JsonValue>(key: string, value: TValue): StorageSetting<TValue> {
-    const current = this.get<TValue>(key);
     const timestamp = nowIso();
 
     this.upsertStatement.run({
-      created_at: current?.createdAt ?? timestamp,
+      created_at: timestamp,
       key,
       updated_at: timestamp,
       value_json: JSON.stringify(value),

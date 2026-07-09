@@ -124,6 +124,27 @@ describe("storage package", () => {
     storage.close();
   });
 
+  it("preserves created_at across an update, without a pre-read, for groups, records, and settings", () => {
+    const storage = openStorageDatabase({ filename: ":memory:" });
+
+    const firstGroup = storage.repositories.groups.upsert(createGroup());
+    const secondGroup = storage.repositories.groups.upsert({ ...createGroup(), title: "Updated Title" });
+    expect(secondGroup.createdAt).toBe(firstGroup.createdAt);
+    expect(secondGroup.title).toBe("Updated Title");
+
+    const firstRecord = storage.repositories.records.upsert(createMotorRecord());
+    const secondRecord = storage.repositories.records.upsert(createMotorRecord({ title: "Updated Motor" }));
+    expect(secondRecord.createdAt).toBe(firstRecord.createdAt);
+    expect(secondRecord.title).toBe("Updated Motor");
+
+    const firstSetting = storage.repositories.settings.set("ui.theme", "light");
+    const secondSetting = storage.repositories.settings.set("ui.theme", "dark");
+    expect(secondSetting.createdAt).toBe(firstSetting.createdAt);
+    expect(secondSetting.value).toBe("dark");
+
+    storage.close();
+  });
+
   it("applies migrations before repositories are used", () => {
     const storage = openStorageDatabase({ filename: ":memory:" });
 
