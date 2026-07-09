@@ -88,46 +88,21 @@ export function VoltageDropPage() {
     version: 1,
     defaultValue: () => createDefaultVoltageDropPageState(),
   });
-  const [groupTitle, setGroupTitle] = useState(pageState.groupTitle);
-  const [segments, setSegments] = useState<VoltageDropTreeSegmentDraft[]>(pageState.segments);
-  const [settings, setSettings] = useState<VoltageDropGroupSettingsDraft>(pageState.settings);
-  const [selectedSegmentId, setSelectedSegmentId] = useState<string | null>(
-    pageState.selectedSegmentId,
-  );
-  const [showAdvanced, setShowAdvanced] = useState(pageState.showAdvanced);
-  const [treeVisible, setTreeVisible] = useState(pageState.treeVisible);
-  const [result, setResult] = useState<VoltageDropGroupResponse | null>(pageState.result);
-  const [lastRequest, setLastRequest] = useState<VoltageDropGroupRequest | null>(
-    pageState.lastRequest,
-  );
+  const {
+    groupTitle,
+    segments,
+    settings,
+    selectedSegmentId,
+    showAdvanced,
+    treeVisible,
+    result,
+    lastRequest,
+  } = pageState;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSave, setShowSave] = useState(false);
   const submitInFlightRef = useRef(false);
   const shouldApplyDefaultsRef = useRef(isFreshVoltageDropPageState(pageState));
-
-  useEffect(() => {
-    setPageState({
-      groupTitle,
-      segments,
-      settings,
-      selectedSegmentId,
-      showAdvanced,
-      treeVisible,
-      result,
-      lastRequest,
-    });
-  }, [
-    groupTitle,
-    lastRequest,
-    result,
-    segments,
-    selectedSegmentId,
-    setPageState,
-    settings,
-    showAdvanced,
-    treeVisible,
-  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -144,19 +119,17 @@ export function VoltageDropPage() {
         }
 
         const merged = mergeVoltageDropGroupDefaults(stored.value);
-        setSettings(merged);
-        setSegments((current) => {
-          const firstSegment = current[0];
-          if (
-            current.length === 1 &&
+        setPageState((current) => {
+          const firstSegment = current.segments[0];
+          const nextSegments =
+            current.segments.length === 1 &&
             firstSegment &&
             firstSegment.loadPowerKW === null &&
             firstSegment.lengthM === null
-          ) {
-            return [createRootSegment(merged)];
-          }
+              ? [createRootSegment(merged)]
+              : current.segments;
 
-          return current;
+          return { ...current, settings: merged, segments: nextSegments };
         });
       } catch {
         // Persisted defaults are optional; built-in defaults remain valid.
@@ -172,14 +145,17 @@ export function VoltageDropPage() {
 
   useEffect(() => {
     if (segments.length === 0) {
-      setSelectedSegmentId(null);
+      if (selectedSegmentId !== null) {
+        setPageState((current) => ({ ...current, selectedSegmentId: null }));
+      }
       return;
     }
     if (!selectedSegmentId || !segments.some((segment) => segment.id === selectedSegmentId)) {
       const firstSegment = segments[0];
-      setSelectedSegmentId(firstSegment ? firstSegment.id : null);
+      const nextSelectedSegmentId = firstSegment ? firstSegment.id : null;
+      setPageState((current) => ({ ...current, selectedSegmentId: nextSelectedSegmentId }));
     }
-  }, [segments, selectedSegmentId]);
+  }, [segments, selectedSegmentId, setPageState]);
 
   const submission = buildVoltageDropTreeSubmission({
     title: groupTitle,
@@ -199,8 +175,12 @@ export function VoltageDropPage() {
     try {
       const bridge = getBridge() as VoltageDropGroupBridge;
       const response = await bridge.calc.voltageDropGroup(submission.request);
-      setResult(response);
-      setLastRequest(submission.request);
+      const submittedRequest = submission.request;
+      setPageState((current) => ({
+        ...current,
+        result: response,
+        lastRequest: submittedRequest,
+      }));
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Hesaplama hatasi.");
     } finally {
@@ -210,44 +190,53 @@ export function VoltageDropPage() {
   }
 
   function updateSegment(segmentId: string, next: VoltageDropTreeSegmentValuePatch) {
-    setSegments((current) => updateSegmentDraft(current, segmentId, next));
+    setPageState((current) => ({
+      ...current,
+      segments: updateSegmentDraft(current.segments, segmentId, next),
+    }));
   }
 
   function addChildSegment(parentId: string) {
-    setSegments((current) => [
+    setPageState((current) => ({
       ...current,
-      createChildSegment(parentId, current.length, settings),
-    ]);
+      segments: [
+        ...current.segments,
+        createChildSegment(parentId, current.segments.length, current.settings),
+      ],
+    }));
   }
 
   function reparentSegment(segmentId: string, nextParentId: string) {
-    setSegments((current) => reparentSegmentDraft(current, segmentId, nextParentId));
+    setPageState((current) => ({
+      ...current,
+      segments: reparentSegmentDraft(current.segments, segmentId, nextParentId),
+    }));
   }
 
   function updateGroupSettings(next: Partial<VoltageDropGroupSettingsDraft>) {
-    setSettings((previousSettings) => {
+    setPageState((current) => {
+      const previousSettings = current.settings;
       const nextSettings = { ...previousSettings, ...next };
-      setSegments((current) =>
-        current.map((segment) => {
-          let nextSegmentSettings = { ...segment.settings };
+      const nextSegments = current.segments.map((segment) => {
+        let nextSegmentSettings = { ...segment.settings };
 
-          for (const key of Object.keys(next) as Array<keyof VoltageDropGroupSettingsDraft>) {
-            const nextValue = next[key];
-            if (
-              nextValue !== undefined &&
-              Object.is(segment.settings[key], previousSettings[key])
-            ) {
-              nextSegmentSettings = {
-                ...nextSegmentSettings,
-                [key]: nextValue,
-              } as VoltageDropGroupSettingsDraft;
-            }
+        for (const key of Object.keys(next) as Array<keyof VoltageDropGroupSettingsDraft>) {
+          const nextValue = next[key];
+          if (
+            nextValue !== undefined &&
+            Object.is(segment.settings[key], previousSettings[key])
+          ) {
+            nextSegmentSettings = {
+              ...nextSegmentSettings,
+              [key]: nextValue,
+            } as VoltageDropGroupSettingsDraft;
           }
+        }
 
-          return { ...segment, settings: nextSegmentSettings };
-        }),
-      );
-      return nextSettings;
+        return { ...segment, settings: nextSegmentSettings };
+      });
+
+      return { ...current, settings: nextSettings, segments: nextSegments };
     });
   }
 
@@ -255,22 +244,23 @@ export function VoltageDropPage() {
     segmentId: string,
     next: Partial<VoltageDropGroupSettingsDraft>,
   ) {
-    setSegments((current) =>
-      current.map((segment) =>
+    setPageState((current) => ({
+      ...current,
+      segments: current.segments.map((segment) =>
         segment.id === segmentId
           ? { ...segment, settings: { ...segment.settings, ...next } }
           : segment,
       ),
-    );
+    }));
   }
 
   function removeSegment(segmentId: string) {
-    setSegments((current) => {
-      if (current.length <= 1) {
+    setPageState((current) => {
+      if (current.segments.length <= 1) {
         return current;
       }
 
-      return removeSegmentDraft(current, segmentId);
+      return { ...current, segments: removeSegmentDraft(current.segments, segmentId) };
     });
   }
 
@@ -328,7 +318,9 @@ export function VoltageDropPage() {
               className={styles.textInput}
               type="text"
               value={groupTitle}
-              onChange={(event) => setGroupTitle(event.target.value)}
+              onChange={(event) =>
+                setPageState((current) => ({ ...current, groupTitle: event.target.value }))
+              }
               placeholder="A grubu"
             />
           </div>
@@ -356,7 +348,9 @@ export function VoltageDropPage() {
             <Button
               type="button"
               variant="secondary"
-              onClick={() => setTreeVisible((current) => !current)}
+              onClick={() =>
+                setPageState((current) => ({ ...current, treeVisible: !current.treeVisible }))
+              }
               aria-pressed={treeVisible}
             >
               {treeVisible ? "Agaci gizle" : "Agaci goster"}
@@ -431,7 +425,9 @@ export function VoltageDropPage() {
               segments={segments}
               resultSegments={result?.value.segments ?? null}
               selectedSegmentId={selectedSegmentId}
-              onSelectSegment={setSelectedSegmentId}
+              onSelectSegment={(id) =>
+                setPageState((current) => ({ ...current, selectedSegmentId: id }))
+              }
               onAddChild={addChildSegment}
             />
           </Card>
@@ -446,7 +442,9 @@ export function VoltageDropPage() {
             segments={segments}
             resultSegments={result?.value.segments ?? null}
             selectedSegmentId={selectedSegmentId}
-            onSelectSegment={setSelectedSegmentId}
+            onSelectSegment={(id) =>
+              setPageState((current) => ({ ...current, selectedSegmentId: id }))
+            }
             onAddChild={addChildSegment}
             onRemove={removeSegment}
             canRemove={() => segments.length > 1}
@@ -484,7 +482,9 @@ export function VoltageDropPage() {
               <Button
                 variant="secondary"
                 className={styles.advancedToggle ?? ""}
-                onClick={() => setShowAdvanced((current) => !current)}
+                onClick={() =>
+                  setPageState((current) => ({ ...current, showAdvanced: !current.showAdvanced }))
+                }
                 aria-expanded={showAdvanced}
                 aria-controls={advancedPanelId}
               >
