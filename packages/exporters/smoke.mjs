@@ -5,6 +5,8 @@ import {
   exportCalculationsToJson,
   exportPresentationToPdf,
 } from "./dist/index.js";
+import { createCellXml } from "./dist/excel.js";
+import { encodeUtf8 } from "./dist/shared.js";
 
 const sampleMotorResult = {
   value: {
@@ -99,6 +101,9 @@ assert.match(excelXml, /Worksheet ss:Name="Protection"/);
 assert.match(excelXml, /input\.phase/);
 assert.match(excelXml, /output\.formulaVariant/);
 assert.match(excelXml, /warnings\[0\]\.input-rounded/);
+// The "body" style is defined in the workbook's <Styles> but must also be applied to
+// data-row cells (it was defined but never wired up to any cell).
+assert.match(excelXml, /<Cell ss:StyleID="body">/);
 
 const pdf = exportPresentationToPdf({
   title: "Calculation Summary",
@@ -170,5 +175,17 @@ while ((turkishStreamMatch = streamRegex.exec(rawPdfBytes)) !== null) {
 }
 
 assert.ok(checkedAtLeastOneStream, "expected at least one PDF content stream to check");
+
+// Regression: SpreadsheetML Boolean cells must render "1"/"0", not "true"/"false".
+// (Unreachable via exportCalculationsToExcel today since all cells are built from
+// pre-stringified values, but createCellXml must still be correct if a boolean/number
+// cell is ever produced directly — see excel.ts inferCellType/createCellXml.)
+assert.match(createCellXml({ value: true }), /<Data ss:Type="Boolean">1<\/Data>/);
+assert.match(createCellXml({ value: false }), /<Data ss:Type="Boolean">0<\/Data>/);
+
+// encodeUtf8 must correctly encode supplementary-plane (surrogate-pair) code points,
+// e.g. an emoji, as 4-byte UTF-8 sequences — the exact standard TextEncoder implements.
+assert.deepEqual(Array.from(encodeUtf8("😀")), [0xf0, 0x9f, 0x98, 0x80]);
+assert.deepEqual(Array.from(encodeUtf8("ğşıöüç")), Array.from(new TextEncoder().encode("ğşıöüç")));
 
 console.log("exporters smoke tests passed");

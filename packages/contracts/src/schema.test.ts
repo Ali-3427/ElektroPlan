@@ -15,8 +15,12 @@ import {
   motorResponseSchema,
   motorSuggestedCableSectionSchema,
   protectionResponseSchema,
+  voltageDropCurrentRequestSchema,
   voltageDropGroupRequestSchema,
+  voltageDropGroupResolvedSettingsSchema,
   voltageDropGroupResponseSchema,
+  voltageDropGroupSettingsRequestSchema,
+  voltageDropPowerRequestSchema,
   voltageDropResponseSchema,
 } from "./schemas.js";
 import {
@@ -94,6 +98,44 @@ voltageDropResponseSchema.parse({
   dataVersion: "voltage-drop-formula-v1",
   engineVersion: "1.0.0",
 });
+
+// voltageDropCurrentRequestSchema / voltageDropPowerRequestSchema — lengthM, sectionMm2,
+// and powerKW must reject zero/negative values, matching the group segment schema's
+// identical physical quantities.
+const voltageDropRequestBase = {
+  systemType: "three-phase-ac-ll" as const,
+  impedanceMode: "exact-ac" as const,
+  conductorMaterial: "copper" as const,
+  lengthM: 45,
+  sectionMm2: 16,
+  baseVoltageV: 400,
+};
+
+voltageDropCurrentRequestSchema.parse({
+  ...voltageDropRequestBase,
+  mode: "current",
+  currentA: 32,
+});
+
+assertThrows(() =>
+  voltageDropCurrentRequestSchema.parse({ ...voltageDropRequestBase, lengthM: 0, mode: "current", currentA: 32 }),
+);
+assertThrows(() =>
+  voltageDropCurrentRequestSchema.parse({ ...voltageDropRequestBase, sectionMm2: -1, mode: "current", currentA: 32 }),
+);
+
+voltageDropPowerRequestSchema.parse({
+  ...voltageDropRequestBase,
+  mode: "power",
+  powerKW: 5,
+});
+
+assertThrows(() =>
+  voltageDropPowerRequestSchema.parse({ ...voltageDropRequestBase, mode: "power", powerKW: 0 }),
+);
+assertThrows(() =>
+  voltageDropPowerRequestSchema.parse({ ...voltageDropRequestBase, mode: "power", powerKW: -5 }),
+);
 
 voltageDropGroupRequestSchema.parse({
   segments: [
@@ -222,6 +264,32 @@ voltageDropGroupResponseSchema.parse({
   dataVersion: "voltage-drop-group-radial-v1",
   engineVersion: "1.0.0",
 });
+
+// Consolidated group-settings schemas (request/resolved/segment) must still reject unknown
+// keys — regression guard for the shared base-object refactor (F3).
+assertThrows(() =>
+  voltageDropGroupSettingsRequestSchema.parse({ cosPhi: 0.8, extraKey: "nope" }),
+);
+assertThrows(() =>
+  voltageDropGroupResolvedSettingsSchema.parse({
+    limitPercent: 3,
+    phaseMode: "auto",
+    systemType: "single-phase-ac-two-conductor",
+    baseVoltageV: 230,
+    cosPhi: 0.8,
+    efficiencyPercent: 100,
+    conductorMaterial: "copper",
+    installationMethod: "C",
+    insulationRating: "XLPE_EPR_90C",
+    ambientTemperatureC: 30,
+    groupedCircuits: 1,
+    thirdHarmonicPercent: 0,
+    conductorTempC: 70,
+    impedanceMode: "simplified",
+    terminalLossFactor: 1.015,
+    extraKey: "nope",
+  }),
+);
 
 calculationRecordSchema.parse({
   id: "vd-old",

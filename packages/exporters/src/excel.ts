@@ -19,7 +19,7 @@ interface WorksheetCell {
   styleId?: "header" | "section" | "body";
 }
 
-function inferCellType(value: WorksheetCell["value"]): "String" | "Number" | "Boolean" {
+export function inferCellType(value: WorksheetCell["value"]): "String" | "Number" | "Boolean" {
   if (typeof value === "number") {
     return "Number";
   }
@@ -31,10 +31,23 @@ function inferCellType(value: WorksheetCell["value"]): "String" | "Number" | "Bo
   return "String";
 }
 
-function createCellXml(cell: WorksheetCell): string {
+function formatCellValue(cell: WorksheetCell, type: "String" | "Number" | "Boolean"): string {
+  if (type === "String") {
+    return escapeXml(String(cell.value));
+  }
+
+  if (type === "Boolean") {
+    // SpreadsheetML Boolean data expects "1"/"0", not the JS "true"/"false" strings.
+    return cell.value ? "1" : "0";
+  }
+
+  return String(cell.value);
+}
+
+export function createCellXml(cell: WorksheetCell): string {
   const type = inferCellType(cell.value);
   const style = cell.styleId ? ` ss:StyleID="${cell.styleId}"` : "";
-  const value = type === "String" ? escapeXml(String(cell.value)) : String(cell.value);
+  const value = formatCellValue(cell, type);
 
   return `<Cell${style}><Data ss:Type="${type}">${value}</Data></Cell>`;
 }
@@ -66,26 +79,26 @@ function buildWorksheetXml(calculator: CalculatorKind, records: CalculationRecor
 
     if (flattenedRows.length === 0) {
       rows.push([
-        { value: record.id },
-        { value: record.title ?? "" },
-        { value: record.grouping?.groupTitle ?? "" },
-        { value: "output" },
-        { value: "output" },
-        { value: "" },
-        { value: "" },
+        { value: record.id, styleId: "body" },
+        { value: record.title ?? "", styleId: "body" },
+        { value: record.grouping?.groupTitle ?? "", styleId: "body" },
+        { value: "output", styleId: "body" },
+        { value: "output", styleId: "body" },
+        { value: "", styleId: "body" },
+        { value: "", styleId: "body" },
       ]);
       return;
     }
 
     flattenedRows.forEach((row) => {
       rows.push([
-        { value: row.recordId },
-        { value: row.title },
-        { value: row.groupTitle },
-        { value: row.section },
-        { value: row.path },
-        { value: row.value },
-        { value: row.detail },
+        { value: row.recordId, styleId: "body" },
+        { value: row.title, styleId: "body" },
+        { value: row.groupTitle, styleId: "body" },
+        { value: row.section, styleId: "body" },
+        { value: row.path, styleId: "body" },
+        { value: row.value, styleId: "body" },
+        { value: row.detail, styleId: "body" },
       ]);
     });
   });

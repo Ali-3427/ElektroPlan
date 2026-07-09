@@ -4,7 +4,6 @@ export const installationMethodValues = ["A1", "A2", "B1", "B2", "C", "D", "E"] 
 export const installationMethodSchema = z.enum(installationMethodValues);
 
 export const ampacityMaterialSchema = z.enum(["copper", "aluminum"]);
-export const conductorMaterialSchema = ampacityMaterialSchema;
 export const insulationRatingSchema = z.literal("XLPE/EPR");
 export const harmonicSizingCurrentBasisSchema = z.enum(["design-current", "neutral-current"]);
 
@@ -136,9 +135,9 @@ const voltageDropInputBaseSchema = z
   .object({
     systemType: voltageDropSystemTypeSchema,
     impedanceMode: voltageDropImpedanceModeSchema,
-    conductorMaterial: conductorMaterialSchema,
-    lengthM: z.number(),
-    sectionMm2: z.number(),
+    conductorMaterial: ampacityMaterialSchema,
+    lengthM: z.number().positive(),
+    sectionMm2: z.number().positive(),
     baseVoltageV: z.number(),
     parallelConductors: z.number().optional(),
     conductorTempC: z.number().optional(),
@@ -154,7 +153,7 @@ export const voltageDropCurrentRequestSchema = voltageDropInputBaseSchema.extend
 
 export const voltageDropPowerRequestSchema = voltageDropInputBaseSchema.extend({
   mode: z.literal("power"),
-  powerKW: z.number(),
+  powerKW: z.number().positive(),
   cosPhi: z.number().optional(),
 });
 
@@ -168,7 +167,7 @@ export const voltageDropOutputSchema = z
     mode: voltageDropLoadModeSchema,
     systemType: voltageDropSystemTypeSchema,
     impedanceMode: voltageDropImpedanceModeSchema,
-    conductorMaterial: conductorMaterialSchema,
+    conductorMaterial: ampacityMaterialSchema,
     lengthM: z.number(),
     sectionMm2: z.number(),
     baseVoltageV: z.number(),
@@ -201,74 +200,11 @@ export const voltageDropGroupInsulationRatingSchema = z.enum([
   "XLPE_EPR_90C",
 ]);
 
-export const voltageDropGroupSegmentRequestSchema = z
+// Shared "engineering settings" fields repeated across the group segment request's inline
+// settings, the top-level settings request/resolved schemas, and the segment output's inline
+// settings. Kept as one base object so the ~12 fields aren't hand-copied four times.
+const voltageDropGroupEngineeringSettingsSchema = z
   .object({
-    id: z.string().min(1).optional(),
-    parentId: z.string().min(1).nullable().optional(),
-    title: z.string().min(1),
-    loadPowerKW: z.number().positive().optional(),
-    localPowerKW: z.number().positive().optional(),
-    lengthM: z.number().positive(),
-    fixedSectionKey: z.string().min(1).optional(),
-    sectionMm2: z.number().positive().optional(),
-    settings: z
-      .object({
-        cosPhi: z.number().optional(),
-        efficiencyPercent: z.number().optional(),
-        conductorMaterial: ampacityMaterialSchema.optional(),
-        installationMethod: installationMethodSchema.optional(),
-        insulationRating: voltageDropGroupInsulationRatingSchema.optional(),
-        ambientTemperatureC: z.number().optional(),
-        groupedCircuits: z.number().optional(),
-        thirdHarmonicPercent: z.number().optional(),
-        conductorTempC: z.number().optional(),
-        impedanceMode: voltageDropImpedanceModeSchema.optional(),
-        reactanceOhmPerKm: z.number().optional(),
-        terminalLossFactor: z.number().optional(),
-      })
-      .strict()
-      .optional(),
-  })
-  .strict()
-  .refine((segment) => segment.loadPowerKW !== undefined || segment.localPowerKW !== undefined, {
-    message: "loadPowerKW is required.",
-  });
-
-export const voltageDropGroupSettingsRequestSchema = z
-  .object({
-    limitPercent: z.number().optional(),
-    phaseMode: voltageDropGroupPhaseModeSchema.optional(),
-    singlePhaseVoltageV: z.number().optional(),
-    threePhaseVoltageV: z.number().optional(),
-    cosPhi: z.number().optional(),
-    efficiencyPercent: z.number().optional(),
-    conductorMaterial: ampacityMaterialSchema.optional(),
-    installationMethod: installationMethodSchema.optional(),
-    insulationRating: voltageDropGroupInsulationRatingSchema.optional(),
-    ambientTemperatureC: z.number().optional(),
-    groupedCircuits: z.number().optional(),
-    thirdHarmonicPercent: z.number().optional(),
-    conductorTempC: z.number().optional(),
-    impedanceMode: voltageDropImpedanceModeSchema.optional(),
-    reactanceOhmPerKm: z.number().optional(),
-    terminalLossFactor: z.number().optional(),
-  })
-  .strict();
-
-export const voltageDropGroupRequestSchema = z
-  .object({
-    title: z.string().min(1).optional(),
-    segments: z.array(voltageDropGroupSegmentRequestSchema),
-    settings: voltageDropGroupSettingsRequestSchema.optional(),
-  })
-  .strict();
-
-export const voltageDropGroupResolvedSettingsSchema = z
-  .object({
-    limitPercent: z.number(),
-    phaseMode: voltageDropGroupPhaseModeSchema,
-    systemType: voltageDropGroupSystemTypeSchema,
-    baseVoltageV: z.number(),
     cosPhi: z.number(),
     efficiencyPercent: z.number(),
     conductorMaterial: ampacityMaterialSchema,
@@ -283,6 +219,48 @@ export const voltageDropGroupResolvedSettingsSchema = z
     terminalLossFactor: z.number(),
   })
   .strict();
+
+const voltageDropGroupEngineeringSettingsPartialSchema =
+  voltageDropGroupEngineeringSettingsSchema.partial();
+
+export const voltageDropGroupSegmentRequestSchema = z
+  .object({
+    id: z.string().min(1).optional(),
+    parentId: z.string().min(1).nullable().optional(),
+    title: z.string().min(1),
+    loadPowerKW: z.number().positive().optional(),
+    localPowerKW: z.number().positive().optional(),
+    lengthM: z.number().positive(),
+    fixedSectionKey: z.string().min(1).optional(),
+    sectionMm2: z.number().positive().optional(),
+    settings: voltageDropGroupEngineeringSettingsPartialSchema.optional(),
+  })
+  .strict()
+  .refine((segment) => segment.loadPowerKW !== undefined || segment.localPowerKW !== undefined, {
+    message: "loadPowerKW is required.",
+  });
+
+export const voltageDropGroupSettingsRequestSchema = voltageDropGroupEngineeringSettingsPartialSchema.extend({
+  limitPercent: z.number().optional(),
+  phaseMode: voltageDropGroupPhaseModeSchema.optional(),
+  singlePhaseVoltageV: z.number().optional(),
+  threePhaseVoltageV: z.number().optional(),
+});
+
+export const voltageDropGroupRequestSchema = z
+  .object({
+    title: z.string().min(1).optional(),
+    segments: z.array(voltageDropGroupSegmentRequestSchema),
+    settings: voltageDropGroupSettingsRequestSchema.optional(),
+  })
+  .strict();
+
+export const voltageDropGroupResolvedSettingsSchema = voltageDropGroupEngineeringSettingsSchema.extend({
+  limitPercent: z.number(),
+  phaseMode: voltageDropGroupPhaseModeSchema,
+  systemType: voltageDropGroupSystemTypeSchema,
+  baseVoltageV: z.number(),
+});
 
 export const voltageDropGroupSegmentOutputSchema = z
   .object({
@@ -303,23 +281,7 @@ export const voltageDropGroupSegmentOutputSchema = z
     selectedParallelRuns: z.number().int().positive().optional(),
     selectedSectionMm2: z.number().positive(),
     fixedSection: z.boolean().optional(),
-    settings: z
-      .object({
-        cosPhi: z.number(),
-        efficiencyPercent: z.number(),
-        conductorMaterial: ampacityMaterialSchema,
-        installationMethod: installationMethodSchema,
-        insulationRating: voltageDropGroupInsulationRatingSchema,
-        ambientTemperatureC: z.number(),
-        groupedCircuits: z.number(),
-        thirdHarmonicPercent: z.number(),
-        conductorTempC: z.number(),
-        impedanceMode: voltageDropImpedanceModeSchema,
-        reactanceOhmPerKm: z.number().optional(),
-        terminalLossFactor: z.number(),
-      })
-      .strict()
-      .optional(),
+    settings: voltageDropGroupEngineeringSettingsSchema.optional(),
     baseAmpacityA: z.number(),
     correctedAmpacityA: z.number(),
     segmentDeltaVVolts: z.number(),
@@ -359,8 +321,6 @@ export const voltageDropGroupOutputSchema = z
 export const voltageDropGroupResponseSchema =
   createCalculationResultSchema(voltageDropGroupOutputSchema);
 
-export const cablePhaseSchema = z.union([z.literal(1), z.literal(3)]);
-
 export const cableVoltageDropSystemTypeSchema = z.enum([
   "single-phase-ac-two-conductor",
   "three-phase-ac-ll",
@@ -394,7 +354,7 @@ export const preliminaryCableEstimateSchema = z
 export const cableRequestSchema = z
   .object({
     designCurrentA: z.number(),
-    phase: cablePhaseSchema,
+    phase: motorPhaseSchema,
     conductorMaterial: ampacityMaterialSchema,
     installationMethod: installationMethodSchema,
     insulationRating: insulationRatingSchema,
