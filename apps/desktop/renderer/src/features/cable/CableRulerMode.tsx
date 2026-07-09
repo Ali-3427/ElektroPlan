@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type {
   CableRulerAmbient,
@@ -61,19 +61,9 @@ export function CableRulerMode() {
     version: 1,
     defaultValue: () => createDefaultCableRulerPageState(),
   });
-  const [designCurrentA, setDesignCurrentA] = useState<number | null>(pageState.designCurrentA);
-  const [ambient, setAmbient] = useState<CableRulerAmbient>(pageState.ambient);
-  const [result, setResult] = useState<CableRulerResponse | null>(pageState.result);
+  const { designCurrentA, ambient, result } = pageState;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setPageState({
-      designCurrentA,
-      ambient,
-      result,
-    });
-  }, [ambient, designCurrentA, result, setPageState]);
 
   const rulerTableQuery = useQuery({
     queryKey: queryKeys.cableRulerTable,
@@ -98,9 +88,9 @@ export function CableRulerMode() {
         designCurrentA,
         ambient,
       });
-      setResult(response);
+      setPageState((current) => ({ ...current, result: response }));
     } catch (caughtError) {
-      setResult(null);
+      setPageState((current) => ({ ...current, result: null }));
       if (caughtError instanceof Error && /No cable ruler row/i.test(caughtError.message)) {
         setError("Bu akım için ruler aralığında kesit yok.");
       } else {
@@ -142,12 +132,22 @@ export function CableRulerMode() {
         <div className={styles.form}>
           <div className={fieldGrid}>
             <Field label="Tasarım Akımı (A)" required>
-              <NumberInput value={designCurrentA} onChange={setDesignCurrentA} />
+              <NumberInput
+                value={designCurrentA}
+                onChange={(next) =>
+                  setPageState((current) => ({ ...current, designCurrentA: next }))
+                }
+              />
             </Field>
             <Field label="Ortam">
               <Select
                 value={ambient}
-                onChange={(value) => setAmbient(value as CableRulerAmbient)}
+                onChange={(value) =>
+                  setPageState((current) => ({
+                    ...current,
+                    ambient: value as CableRulerAmbient,
+                  }))
+                }
                 options={AMBIENT_OPTIONS}
               />
             </Field>
