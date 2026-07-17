@@ -71,6 +71,10 @@ const migrations: Migration[] = [
     id: 2,
     name: "p2_grouping_quantity",
     up(database) {
+      // Migration 1 already creates records.grouping_quantity for any fresh
+      // database, so this ALTER TABLE always throws "duplicate column name"
+      // there and is a deliberate no-op in that case. It's only meaningful
+      // for a database created before migration 1 included that column.
       try {
         database.exec(`
           ALTER TABLE records
@@ -233,6 +237,44 @@ const migrations: Migration[] = [
       }
     },
   },
+  {
+    id: 5,
+    name: "p5_record_grouping_present_flag",
+    up(database) {
+      // A record's `grouping` is optional at the contract level, so a
+      // legitimately all-empty grouping (`{}`) must round-trip differently
+      // from no grouping at all (`undefined`) even though every split
+      // grouping_* column is NULL in both cases. This flag disambiguates the
+      // two. Guard with PRAGMA table_info (not error-message matching) so the
+      // migration is safely re-runnable.
+      const columns = database.prepare("PRAGMA table_info(records);").all() as Array<{ name: string }>;
+      const hasColumn = columns.some((column) => column.name === "grouping_present");
+
+      if (!hasColumn) {
+        database.exec(`
+          ALTER TABLE records
+          ADD COLUMN grouping_present INTEGER NOT NULL DEFAULT 0;
+        `);
+      }
+
+      // Backfill rows written before this migration existed: if any split
+      // grouping_* column already carries a value, grouping was present at
+      // write time even though the flag column didn't exist yet.
+      database.exec(`
+        UPDATE records
+        SET grouping_present = 1
+        WHERE grouping_present = 0
+          AND (
+            grouping_group_id IS NOT NULL OR
+            grouping_group_path_json IS NOT NULL OR
+            grouping_group_title IS NOT NULL OR
+            grouping_order_value IS NOT NULL OR
+            grouping_quantity IS NOT NULL OR
+            grouping_tags_json IS NOT NULL
+          );
+      `);
+    },
+  },
 ];
 
 export function applyMigrations(database: SqliteDatabase): void {
@@ -258,14 +300,15 @@ export function applyMigrations(database: SqliteDatabase): void {
     "INSERT INTO schema_migrations (id, name, applied_at) VALUES (@id, @name, @applied_at)",
   );
 
-  const recordMigration = (migration: Migration) =>
+  function recordMigration(migration: Migration): void {
     insertMigration.run({
       applied_at: new Date().toISOString(),
       id: migration.id,
       name: migration.name,
     });
+  }
 
-  const runWrapped = database.transaction((migration: Migration) => {
+  const runWrapped = database.transaction(function runMigration(migration: Migration) {
     migration.up(database);
     recordMigration(migration);
   });

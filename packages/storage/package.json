@@ -12,7 +12,7 @@
     "build": "tsc -b",
     "typecheck": "tsc -b --pretty false",
     "lint": "eslint src --ext .ts",
-    "test": "vitest run --pool threads src/index.test.ts"
+    "test": "vitest run --pool threads src/index.test.ts src/material-repos.test.ts"
   },
   "dependencies": {
     "@elektroplan/contracts": "file:../contracts",

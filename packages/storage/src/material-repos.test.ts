@@ -321,7 +321,7 @@ describe("materials repositories", () => {
     storage.close();
   });
 
-  it("throws when deleting a category that still has materials", () => {
+  it("materialCategories.delete returns false for a referenced category instead of throwing", () => {
     const storage = openStorageDatabase({ filename: ":memory:" });
     storage.repositories.materialCategories.upsert(
       createCategory({ id: "cat-protected", title: "Protected" }),
@@ -334,7 +334,8 @@ describe("materials repositories", () => {
       }),
     );
 
-    expect(() => storage.repositories.materialCategories.delete("cat-protected")).toThrow();
+    expect(storage.repositories.materialCategories.delete("cat-protected")).toBe(false);
+    expect(storage.repositories.materialCategories.getById("cat-protected")).not.toBeNull();
 
     storage.close();
   });

@@ -1,7 +1,7 @@
 import type { Database as SqliteDatabase, Statement } from "better-sqlite3";
 import type { ZodType } from "zod";
 
-import { calculationsExportSchema } from "./contracts.js";
+import { calculationsExportSchema } from "@elektroplan/contracts";
 import {
   deserializeGroup,
   deserializeMaterial,
@@ -47,6 +47,20 @@ import type {
 
 function nowIso(): string {
   return new Date().toISOString();
+}
+
+function isForeignKeyConstraintError(error: unknown): boolean {
+  if (!(error instanceof Error) || !("code" in error)) {
+    return false;
+  }
+
+  // SQLite reports a plain FK violation as SQLITE_CONSTRAINT_FOREIGNKEY, but an
+  // `ON DELETE RESTRICT` violation specifically is enforced via an internal
+  // trigger and surfaces as SQLITE_CONSTRAINT_TRIGGER instead. Both carry the
+  // same "FOREIGN KEY constraint failed" message, so match on both signals
+  // rather than a single sub-code.
+  const code = (error as { code?: unknown }).code;
+  return typeof code === "string" && code.startsWith("SQLITE_CONSTRAINT") && error.message.includes("FOREIGN KEY");
 }
 
 const SEARCH_LOCALES = ["und", "tr"];
@@ -95,6 +109,19 @@ function matchesUnicodeSearch(fields: Array<string | null>, search: string): boo
   });
 }
 
+const GROUP_COLUMNS = `
+  created_at,
+  id,
+  order_value,
+  parent_group_id,
+  tags_json,
+  title,
+  updated_at,
+  version_contract,
+  version_data,
+  version_engine
+`;
+
 export class SqliteGroupsRepository implements GroupsRepository {
   private readonly deleteStatement: Statement<[string]>;
   private readonly selectAllStatement: Statement<[], GroupRow>;
@@ -104,17 +131,7 @@ export class SqliteGroupsRepository implements GroupsRepository {
   public constructor(private readonly database: SqliteDatabase) {
     this.deleteStatement = database.prepare("DELETE FROM groups WHERE id = ?");
     this.selectAllStatement = database.prepare(`
-      SELECT
-        created_at,
-        id,
-        order_value,
-        parent_group_id,
-        tags_json,
-        title,
-        updated_at,
-        version_contract,
-        version_data,
-        version_engine
+      SELECT ${GROUP_COLUMNS}
       FROM groups
       ORDER BY
         COALESCE(parent_group_id, ''),
@@ -123,17 +140,7 @@ export class SqliteGroupsRepository implements GroupsRepository {
         id
     `);
     this.selectByIdStatement = database.prepare(`
-      SELECT
-        created_at,
-        id,
-        order_value,
-        parent_group_id,
-        tags_json,
-        title,
-        updated_at,
-        version_contract,
-        version_data,
-        version_engine
+      SELECT ${GROUP_COLUMNS}
       FROM groups
       WHERE id = ?
     `);
@@ -189,13 +196,9 @@ export class SqliteGroupsRepository implements GroupsRepository {
   }
 
   public upsert(group: GroupUpsertInput): PersistedCalculationGroup {
-    const current = this.getById(group.id);
     const timestamp = nowIso();
     const row = serializeGroup(group, timestamp);
-    this.upsertStatement.run({
-      ...row,
-      created_at: current?.createdAt ?? row.created_at,
-    });
+    this.upsertStatement.run(row);
 
     const stored = this.getById(group.id);
     if (stored === null) {
@@ -205,6 +208,26 @@ export class SqliteGroupsRepository implements GroupsRepository {
     return stored;
   }
 }
+
+const RECORD_COLUMNS = `
+  calculator,
+  created_at,
+  grouping_group_id,
+  grouping_group_path_json,
+  grouping_group_title,
+  grouping_order_value,
+  grouping_present,
+  grouping_quantity,
+  grouping_tags_json,
+  id,
+  input_json,
+  output_json,
+  title,
+  updated_at,
+  version_contract,
+  version_data,
+  version_engine
+`;
 
 export class SqliteRecordsRepository implements RecordsRepository {
   private readonly deleteStatement: Statement<[string]>;
@@ -216,66 +239,18 @@ export class SqliteRecordsRepository implements RecordsRepository {
   public constructor(private readonly database: SqliteDatabase) {
     this.deleteStatement = database.prepare("DELETE FROM records WHERE id = ?");
     this.listAllStatement = database.prepare(`
-      SELECT
-        calculator,
-        created_at,
-        grouping_group_id,
-        grouping_group_path_json,
-        grouping_group_title,
-        grouping_order_value,
-        grouping_quantity,
-        grouping_tags_json,
-        id,
-        input_json,
-        output_json,
-        title,
-        updated_at,
-        version_contract,
-        version_data,
-        version_engine
+      SELECT ${RECORD_COLUMNS}
       FROM records
       ORDER BY updated_at DESC, id ASC
     `);
     this.listByGroupStatement = database.prepare(`
-      SELECT
-        calculator,
-        created_at,
-        grouping_group_id,
-        grouping_group_path_json,
-        grouping_group_title,
-        grouping_order_value,
-        grouping_quantity,
-        grouping_tags_json,
-        id,
-        input_json,
-        output_json,
-        title,
-        updated_at,
-        version_contract,
-        version_data,
-        version_engine
+      SELECT ${RECORD_COLUMNS}
       FROM records
       WHERE grouping_group_id = ?
       ORDER BY updated_at DESC, id ASC
     `);
     this.selectByIdStatement = database.prepare(`
-      SELECT
-        calculator,
-        created_at,
-        grouping_group_id,
-        grouping_group_path_json,
-        grouping_group_title,
-        grouping_order_value,
-        grouping_quantity,
-        grouping_tags_json,
-        id,
-        input_json,
-        output_json,
-        title,
-        updated_at,
-        version_contract,
-        version_data,
-        version_engine
+      SELECT ${RECORD_COLUMNS}
       FROM records
       WHERE id = ?
     `);
@@ -288,6 +263,7 @@ export class SqliteRecordsRepository implements RecordsRepository {
         grouping_group_path_json,
         grouping_group_title,
         grouping_order_value,
+        grouping_present,
         grouping_quantity,
         grouping_tags_json,
         input_json,
@@ -306,6 +282,7 @@ export class SqliteRecordsRepository implements RecordsRepository {
         @grouping_group_path_json,
         @grouping_group_title,
         @grouping_order_value,
+        @grouping_present,
         @grouping_quantity,
         @grouping_tags_json,
         @input_json,
@@ -323,6 +300,7 @@ export class SqliteRecordsRepository implements RecordsRepository {
         grouping_group_path_json = excluded.grouping_group_path_json,
         grouping_group_title = excluded.grouping_group_title,
         grouping_order_value = excluded.grouping_order_value,
+        grouping_present = excluded.grouping_present,
         grouping_quantity = excluded.grouping_quantity,
         grouping_tags_json = excluded.grouping_tags_json,
         input_json = excluded.input_json,
@@ -350,13 +328,9 @@ export class SqliteRecordsRepository implements RecordsRepository {
   }
 
   public upsert(record: RecordUpsertInput): PersistedCalculationRecord {
-    const current = this.getById(record.id);
     const timestamp = nowIso();
     const row = serializeRecord(record, timestamp);
-    this.upsertStatement.run({
-      ...row,
-      created_at: current?.createdAt ?? row.created_at,
-    });
+    this.upsertStatement.run(row);
 
     const stored = this.getById(record.id);
     if (stored === null) {
@@ -367,6 +341,15 @@ export class SqliteRecordsRepository implements RecordsRepository {
   }
 }
 
+const MATERIAL_CATEGORY_COLUMNS = `
+  created_at,
+  icon_key,
+  id,
+  order_value,
+  title,
+  updated_at
+`;
+
 export class SqliteMaterialCategoriesRepository implements MaterialCategoriesRepository {
   private readonly deleteStatement: Statement<[string]>;
   private readonly selectAllStatement: Statement<[], MaterialCategoryRow>;
@@ -376,13 +359,7 @@ export class SqliteMaterialCategoriesRepository implements MaterialCategoriesRep
   public constructor(private readonly database: SqliteDatabase) {
     this.deleteStatement = database.prepare("DELETE FROM material_categories WHERE id = ?");
     this.selectAllStatement = database.prepare(`
-      SELECT
-        created_at,
-        icon_key,
-        id,
-        order_value,
-        title,
-        updated_at
+      SELECT ${MATERIAL_CATEGORY_COLUMNS}
       FROM material_categories
       ORDER BY
         CASE WHEN order_value IS NULL THEN 1 ELSE 0 END,
@@ -391,13 +368,7 @@ export class SqliteMaterialCategoriesRepository implements MaterialCategoriesRep
         id ASC
     `);
     this.selectByIdStatement = database.prepare(`
-      SELECT
-        created_at,
-        icon_key,
-        id,
-        order_value,
-        title,
-        updated_at
+      SELECT ${MATERIAL_CATEGORY_COLUMNS}
       FROM material_categories
       WHERE id = ?
     `);
@@ -428,7 +399,14 @@ export class SqliteMaterialCategoriesRepository implements MaterialCategoriesRep
   }
 
   public delete(id: string): boolean {
-    return this.deleteStatement.run(id).changes > 0;
+    try {
+      return this.deleteStatement.run(id).changes > 0;
+    } catch (error) {
+      if (isForeignKeyConstraintError(error)) {
+        return false;
+      }
+      throw error;
+    }
   }
 
   public getById(id: string): PersistedMaterialCategory | null {
@@ -441,13 +419,9 @@ export class SqliteMaterialCategoriesRepository implements MaterialCategoriesRep
   }
 
   public upsert(category: MaterialCategoryUpsertInput): PersistedMaterialCategory {
-    const current = this.getById(category.id);
     const timestamp = nowIso();
     const row = serializeMaterialCategory(category, timestamp);
-    this.upsertStatement.run({
-      ...row,
-      created_at: current?.createdAt ?? row.created_at,
-    });
+    this.upsertStatement.run(row);
 
     const stored = this.getById(category.id);
     if (stored === null) {
@@ -458,6 +432,24 @@ export class SqliteMaterialCategoriesRepository implements MaterialCategoriesRep
   }
 }
 
+const MATERIAL_COLUMNS = `
+  attributes_json,
+  brand,
+  category_id,
+  created_at,
+  id,
+  model_code,
+  name,
+  notes,
+  order_value,
+  seed_data_version,
+  source,
+  stock_qty,
+  unit,
+  unit_price,
+  updated_at
+`;
+
 export class SqliteMaterialsRepository implements MaterialsRepository {
   private readonly deleteStatement: Statement<[string]>;
   private readonly selectByIdStatement: Statement<[string], MaterialRow>;
@@ -466,22 +458,7 @@ export class SqliteMaterialsRepository implements MaterialsRepository {
   public constructor(private readonly database: SqliteDatabase) {
     this.deleteStatement = database.prepare("DELETE FROM materials WHERE id = ?");
     this.selectByIdStatement = database.prepare(`
-      SELECT
-        attributes_json,
-        brand,
-        category_id,
-        created_at,
-        id,
-        model_code,
-        name,
-        notes,
-        order_value,
-        seed_data_version,
-        source,
-        stock_qty,
-        unit,
-        unit_price,
-        updated_at
+      SELECT ${MATERIAL_COLUMNS}
       FROM materials
       WHERE id = ?
     `);
@@ -567,22 +544,7 @@ export class SqliteMaterialsRepository implements MaterialsRepository {
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
     const statement = this.database.prepare(`
-      SELECT
-        attributes_json,
-        brand,
-        category_id,
-        created_at,
-        id,
-        model_code,
-        name,
-        notes,
-        order_value,
-        seed_data_version,
-        source,
-        stock_qty,
-        unit,
-        unit_price,
-        updated_at
+      SELECT ${MATERIAL_COLUMNS}
       FROM materials
       ${whereClause}
       ORDER BY
@@ -602,13 +564,9 @@ export class SqliteMaterialsRepository implements MaterialsRepository {
   }
 
   public upsert(material: MaterialUpsertInput): PersistedMaterial {
-    const current = this.getById(material.id);
     const timestamp = nowIso();
     const row = serializeMaterial(material, timestamp);
-    this.upsertStatement.run({
-      ...row,
-      created_at: current?.createdAt ?? row.created_at,
-    });
+    this.upsertStatement.run(row);
 
     const stored = this.getById(material.id);
     if (stored === null) {
@@ -619,6 +577,24 @@ export class SqliteMaterialsRepository implements MaterialsRepository {
   }
 }
 
+const MATERIAL_ASSIGNMENT_COLUMNS = `
+  created_at,
+  id,
+  material_id,
+  order_value,
+  quantity,
+  record_id,
+  snapshot_attributes_json,
+  snapshot_brand,
+  snapshot_category_id,
+  snapshot_category_title,
+  snapshot_model_code,
+  snapshot_name,
+  snapshot_unit_price,
+  unit,
+  updated_at
+`;
+
 export class SqliteMaterialAssignmentsRepository implements MaterialAssignmentsRepository {
   private readonly deleteStatement: Statement<[string]>;
   private readonly selectByIdStatement: Statement<[string], MaterialAssignmentRow>;
@@ -627,22 +603,7 @@ export class SqliteMaterialAssignmentsRepository implements MaterialAssignmentsR
   public constructor(private readonly database: SqliteDatabase) {
     this.deleteStatement = database.prepare("DELETE FROM material_assignments WHERE id = ?");
     this.selectByIdStatement = database.prepare(`
-      SELECT
-        created_at,
-        id,
-        material_id,
-        order_value,
-        quantity,
-        record_id,
-        snapshot_attributes_json,
-        snapshot_brand,
-        snapshot_category_id,
-        snapshot_category_title,
-        snapshot_model_code,
-        snapshot_name,
-        snapshot_unit_price,
-        unit,
-        updated_at
+      SELECT ${MATERIAL_ASSIGNMENT_COLUMNS}
       FROM material_assignments
       WHERE id = ?
     `);
@@ -703,6 +664,11 @@ export class SqliteMaterialAssignmentsRepository implements MaterialAssignmentsR
     return this.deleteStatement.run(id).changes > 0;
   }
 
+  public getById(id: string): PersistedMaterialAssignment | null {
+    const row = this.selectByIdStatement.get(id);
+    return row ? deserializeMaterialAssignment(row) : null;
+  }
+
   public listForRecords(recordIds: string[]): PersistedMaterialAssignment[] {
     if (recordIds.length === 0) {
       return [];
@@ -710,22 +676,7 @@ export class SqliteMaterialAssignmentsRepository implements MaterialAssignmentsR
 
     const placeholders = recordIds.map(() => "?").join(", ");
     const statement = this.database.prepare(`
-      SELECT
-        created_at,
-        id,
-        material_id,
-        order_value,
-        quantity,
-        record_id,
-        snapshot_attributes_json,
-        snapshot_brand,
-        snapshot_category_id,
-        snapshot_category_title,
-        snapshot_model_code,
-        snapshot_name,
-        snapshot_unit_price,
-        unit,
-        updated_at
+      SELECT ${MATERIAL_ASSIGNMENT_COLUMNS}
       FROM material_assignments
       WHERE record_id IN (${placeholders})
       ORDER BY
@@ -740,13 +691,9 @@ export class SqliteMaterialAssignmentsRepository implements MaterialAssignmentsR
   }
 
   public upsert(assignment: MaterialAssignmentUpsertInput): PersistedMaterialAssignment {
-    const current = this.getById(assignment.id);
     const timestamp = nowIso();
     const row = serializeMaterialAssignment(assignment, timestamp);
-    this.upsertStatement.run({
-      ...row,
-      created_at: current?.createdAt ?? row.created_at,
-    });
+    this.upsertStatement.run(row);
 
     const stored = this.getById(assignment.id);
     if (stored === null) {
@@ -754,11 +701,6 @@ export class SqliteMaterialAssignmentsRepository implements MaterialAssignmentsR
     }
 
     return stored;
-  }
-
-  private getById(id: string): PersistedMaterialAssignment | null {
-    const row = this.selectByIdStatement.get(id);
-    return row ? deserializeMaterialAssignment(row) : null;
   }
 }
 
@@ -819,11 +761,10 @@ export class SqliteSettingsRepository implements SettingsRepository {
   }
 
   public set<TValue extends JsonValue>(key: string, value: TValue): StorageSetting<TValue> {
-    const current = this.get<TValue>(key);
     const timestamp = nowIso();
 
     this.upsertStatement.run({
-      created_at: current?.createdAt ?? timestamp,
+      created_at: timestamp,
       key,
       updated_at: timestamp,
       value_json: JSON.stringify(value),

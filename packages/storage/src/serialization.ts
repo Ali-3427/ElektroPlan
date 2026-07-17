@@ -1,3 +1,10 @@
+import {
+  calculationGroupSchema,
+  calculationRecordSchema,
+  materialAssignmentSchema,
+  materialCategorySchema,
+  materialSchema,
+} from "@elektroplan/contracts";
 import type {
   CalculationGroup,
   CalculationRecord,
@@ -5,14 +12,6 @@ import type {
   MaterialAssignment,
   MaterialCategory,
 } from "@elektroplan/contracts";
-
-import {
-  calculationGroupSchema,
-  calculationRecordSchema,
-  materialAssignmentSchema,
-  materialCategorySchema,
-  materialSchema,
-} from "./contracts.js";
 import type {
   JsonValue,
   PersistedCalculationGroup,
@@ -43,6 +42,7 @@ export interface RecordRow {
   grouping_group_path_json: string | null;
   grouping_group_title: string | null;
   grouping_order_value: number | null;
+  grouping_present: number;
   grouping_quantity: number | null;
   grouping_tags_json: string | null;
   id: string;
@@ -160,12 +160,7 @@ export function deserializeRecord(row: RecordRow): PersistedCalculationRecord {
     ...calculationRecordSchema.parse({
       calculator: row.calculator,
       grouping:
-        row.grouping_group_id !== null ||
-        row.grouping_group_path_json !== null ||
-        row.grouping_group_title !== null ||
-        row.grouping_order_value !== null ||
-        row.grouping_quantity !== null ||
-        row.grouping_tags_json !== null
+        row.grouping_present === 1
           ? {
               groupId: row.grouping_group_id ?? undefined,
               groupPath: parseOptionalJson<string[]>(row.grouping_group_path_json),
@@ -200,6 +195,7 @@ export function serializeRecord(record: CalculationRecord, timestamp: string): R
     grouping_group_path_json: parsed.grouping?.groupPath ? serializeJson(parsed.grouping.groupPath) : null,
     grouping_group_title: parsed.grouping?.groupTitle ?? null,
     grouping_order_value: parsed.grouping?.order ?? null,
+    grouping_present: parsed.grouping !== undefined ? 1 : 0,
     grouping_quantity: parsed.grouping?.quantity ?? null,
     grouping_tags_json: parsed.grouping?.tags ? serializeJson(parsed.grouping.tags) : null,
     id: parsed.id,
