@@ -14,6 +14,7 @@ import { ErrorBanner } from "../../ui/ErrorBanner";
 import { Field, fieldGrid } from "../../ui/Field";
 import { NumberInput } from "../../ui/NumberInput";
 import { ResultPanel } from "../../ui/ResultPanel";
+import { ResultRow, resultGrid } from "../../ui/ResultRow";
 import { SaveDialog } from "../../ui/SaveDialog";
 import { Select } from "../../ui/Select";
 import {
@@ -126,6 +127,7 @@ export function FormulaMode() {
         },
       }));
     } catch (e) {
+      if (requestSeq.current !== requestId) return;
       setError(e instanceof Error ? e.message : "Hesaplama hatasi.");
     } finally {
       if (requestSeq.current === requestId) {
@@ -236,7 +238,7 @@ export function FormulaMode() {
           dataVersion={result.dataVersion}
           onSave={saveRecord ? () => setShowSave(true) : undefined}
         >
-          <div className={styles.resultGrid}>
+          <div className={resultGrid}>
             <ResultRow label="Akim" value={formatAmp(result.value.currentA, 2)} highlight />
             <ResultRow label="Giris Gucu" value={`${formatNumberTr(result.value.inputPowerKW, 3)} kW`} />
             <ResultRow
@@ -272,23 +274,6 @@ export function FormulaMode() {
       {showSave && saveRecord ? (
         <SaveDialog record={saveRecord} onClose={() => setShowSave(false)} />
       ) : null}
-    </div>
-  );
-}
-
-function ResultRow({
-  label,
-  value,
-  highlight,
-}: {
-  label: string;
-  value: string;
-  highlight?: boolean;
-}) {
-  return (
-    <div className={`${styles.resultRow} ${highlight ? styles.highlight : ""}`}>
-      <span className={styles.resultLabel}>{label}</span>
-      <span className={styles.resultValue}>{value}</span>
     </div>
   );
 }

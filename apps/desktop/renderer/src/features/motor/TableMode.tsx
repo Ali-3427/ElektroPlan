@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { CalculationRecord, MotorResponse, MotorTableEntryDto } from "../../bridge/types";
 import { getBridge, isBridgeAvailable } from "../../bridge/client";
@@ -9,6 +9,7 @@ import { Card } from "../../ui/Card";
 import { ErrorBanner } from "../../ui/ErrorBanner";
 import { Field, fieldGrid } from "../../ui/Field";
 import { ResultPanel } from "../../ui/ResultPanel";
+import { ResultRow, resultGrid } from "../../ui/ResultRow";
 import { SaveDialog } from "../../ui/SaveDialog";
 import { Select } from "../../ui/Select";
 import { Spinner } from "../../ui/Spinner";
@@ -42,6 +43,7 @@ export function TableMode() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSave, setShowSave] = useState(false);
+  const requestSeq = useRef(0);
 
   useEffect(() => {
     if (entries.length > 0 && selectedKw === null) {
@@ -62,6 +64,7 @@ export function TableMode() {
   }, [setPageState, volt380Disabled, voltage]);
 
   async function handleCalc(kw: number, nextVoltage: 220 | 380) {
+    const requestId = ++requestSeq.current;
     setLoading(true);
     setError(null);
     try {
@@ -70,11 +73,15 @@ export function TableMode() {
         kW: kw,
         voltage: nextVoltage,
       });
+      if (requestSeq.current !== requestId) return;
       setPageState((current) => ({ ...current, result: response }));
     } catch (caughtError) {
+      if (requestSeq.current !== requestId) return;
       setError(caughtError instanceof Error ? caughtError.message : "Hesaplama hatasi.");
     } finally {
-      setLoading(false);
+      if (requestSeq.current === requestId) {
+        setLoading(false);
+      }
     }
   }
 
@@ -201,12 +208,15 @@ export function TableMode() {
           dataVersion={result.dataVersion}
           onSave={saveRecord ? () => setShowSave(true) : undefined}
         >
-          <div className={styles.resultGrid}>
-            <TRow label="Guc (kW)" value={`${formatNumberTr(result.value.kW, 2)} kW`} />
-            <TRow label="PS" value={`${formatNumberTr(result.value.PS, 2)} PS`} />
-            <TRow label="Cosphi" value={formatNumberTr(result.value.cosPhi, 3)} />
-            <TRow label="%Verim" value={`${formatNumberTr(result.value.efficiencyPercent, 1)} %`} />
-            <TRow
+          <div className={resultGrid}>
+            <ResultRow label="Guc (kW)" value={`${formatNumberTr(result.value.kW, 2)} kW`} />
+            <ResultRow label="PS" value={`${formatNumberTr(result.value.PS, 2)} PS`} />
+            <ResultRow label="Cosphi" value={formatNumberTr(result.value.cosPhi, 3)} />
+            <ResultRow
+              label="%Verim"
+              value={`${formatNumberTr(result.value.efficiencyPercent, 1)} %`}
+            />
+            <ResultRow
               label="Akim (A)"
               value={
                 voltage === 380 && selectedEntry?.currentA_380V === null
@@ -215,7 +225,7 @@ export function TableMode() {
               }
               highlight
             />
-            <TRow label="Kablo" value={result.value.cableSpec} />
+            <ResultRow label="Kablo" value={result.value.cableSpec} />
           </div>
         </ResultPanel>
       ) : null}
@@ -223,15 +233,6 @@ export function TableMode() {
       {showSave && saveRecord ? (
         <SaveDialog record={saveRecord} onClose={() => setShowSave(false)} />
       ) : null}
-    </div>
-  );
-}
-
-function TRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
-  return (
-    <div className={`${styles.resultRow} ${highlight ? styles.highlight : ""}`}>
-      <span className={styles.resultLabel}>{label}</span>
-      <span className={styles.resultValue}>{value}</span>
     </div>
   );
 }
