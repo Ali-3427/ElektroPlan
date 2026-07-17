@@ -1,7 +1,6 @@
 export {
   getDefaultProfile,
   getProfileById,
-  getVoltageDropDataVersion,
   getVoltageDropProfiles,
 } from "./accessors.js";
 export { voltageDropProfilesDataset } from "./dataset.js";
@@ -11,6 +10,3 @@ export {
   type VoltageDropProfileId,
   type VoltageDropProfilesDataset,
 } from "./types.js";
-
-// Retained for backward-compat readers referencing prior placeholder.
-export const VOLTAGE_DROP_LIMITS_DATASET_STATUS = "authoritative-v1";

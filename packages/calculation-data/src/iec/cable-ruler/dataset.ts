@@ -1,6 +1,10 @@
 import rulerJson from "./standard-cable-ruler.json" with { type: "json" };
 
-import { loadJsonDataset } from "../../dataset/load-json-dataset.js";
+import {
+  assertColumnsMatchSchema,
+  assertExpectedRowCount,
+  loadJsonDataset,
+} from "../../dataset/load-json-dataset.js";
 import {
   CABLE_RULER_COLUMNS,
   type CableRulerDataset,
@@ -9,7 +13,6 @@ import {
 
 const CABLE_RULER_DATASET_PATH =
   "packages/calculation-data/src/iec/cable-ruler/standard-cable-ruler.json";
-const CABLE_RULER_EXPECTED_ROW_COUNT = 18;
 
 function parseSectionLabel(label: string): number {
   const cleaned = label.replace("*", "").replace(",", ".").trim();
@@ -82,24 +85,21 @@ function assertCableRulerDataset(
     throw new Error(`Cable ruler columns must be an array.`);
   }
 
-  if (
-    dataset.columns.length !== CABLE_RULER_COLUMNS.length ||
-    dataset.columns.some((column, index) => column !== CABLE_RULER_COLUMNS[index])
-  ) {
-    throw new Error(
-      `Cable ruler columns do not match the locked plan in ${CABLE_RULER_DATASET_PATH}.`,
-    );
-  }
+  assertColumnsMatchSchema(
+    dataset.columns,
+    CABLE_RULER_COLUMNS,
+    `Cable ruler columns in '${dataset.metadata.id}'`,
+  );
 
   if (!Array.isArray(dataset.entries)) {
     throw new Error(`Cable ruler entries must be an array.`);
   }
 
-  if (dataset.entries.length !== CABLE_RULER_EXPECTED_ROW_COUNT) {
-    throw new Error(
-      `Cable ruler row count must be ${CABLE_RULER_EXPECTED_ROW_COUNT} in ${CABLE_RULER_DATASET_PATH}.`,
-    );
-  }
+  assertExpectedRowCount(
+    dataset.entries.length,
+    dataset.metadata.expectedRowCount,
+    `Cable ruler '${dataset.metadata.id}'`,
+  );
 
   return dataset;
 }

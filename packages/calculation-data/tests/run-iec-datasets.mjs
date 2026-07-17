@@ -161,6 +161,11 @@ assert.deepEqual(getHarmonicFactor(60), {
   neutralFactor: 1,
   neutralCurrentMultiplier: 1.8,
 });
+assert.equal(
+  getHarmonicFactor(-1),
+  undefined,
+  "getHarmonicFactor must return undefined for negative input, matching the other accessors' not-found convention",
+);
 
 assert.equal(protectionCatalogDataset.metadata.standard, "project-seed-catalog");
 assert.equal(protectionCatalogDataset.metadata.revision, "v1");

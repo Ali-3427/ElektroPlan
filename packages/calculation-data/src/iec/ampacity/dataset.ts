@@ -5,7 +5,11 @@ import copperAmpacityJson from "./copper-xlpe-90c-3loaded.json" with {
   type: "json",
 };
 
-import { loadJsonDataset } from "../../dataset/load-json-dataset.js";
+import {
+  assertAscending,
+  assertReferenceMetadata,
+  loadJsonDataset,
+} from "../../dataset/load-json-dataset.js";
 import {
   INSTALLATION_METHOD_CODES,
   type InstallationMethodCode,
@@ -29,23 +33,15 @@ const AMPACITY_DATASET_PATHS: Record<AmpacityMaterial, string> = {
 };
 
 function assertRequiredMetadata(dataset: Readonly<AmpacityDataset>): void {
-  if (dataset.metadata.standard !== REQUIRED_STANDARD) {
-    throw new Error(
-      `Ampacity dataset '${dataset.metadata.id}' must declare standard '${REQUIRED_STANDARD}'.`,
-    );
-  }
-
-  if (dataset.metadata.revision !== REQUIRED_REVISION) {
-    throw new Error(
-      `Ampacity dataset '${dataset.metadata.id}' must declare revision '${REQUIRED_REVISION}'.`,
-    );
-  }
-
-  if (dataset.metadata.validFrom !== REQUIRED_VALID_FROM) {
-    throw new Error(
-      `Ampacity dataset '${dataset.metadata.id}' must declare validFrom '${REQUIRED_VALID_FROM}'.`,
-    );
-  }
+  assertReferenceMetadata(
+    dataset.metadata,
+    {
+      standard: REQUIRED_STANDARD,
+      revision: REQUIRED_REVISION,
+      validFrom: REQUIRED_VALID_FROM,
+    },
+    `Ampacity dataset '${dataset.metadata.id}'`,
+  );
 }
 
 function assertMethodValues(
@@ -68,11 +64,7 @@ function assertMethodValues(
   }
 }
 
-function assertAmpacityEntry(
-  entry: unknown,
-  index: number,
-  previousCrossSection: number | undefined,
-): number {
+function assertAmpacityEntry(entry: unknown, index: number): number {
   if (typeof entry !== "object" || entry === null) {
     throw new Error(`Ampacity entry ${index} must be an object.`);
   }
@@ -81,13 +73,6 @@ function assertAmpacityEntry(
 
   if (typeof candidate.crossSectionMm2 !== "number") {
     throw new Error(`Ampacity entry ${index} has invalid 'crossSectionMm2'.`);
-  }
-
-  if (
-    previousCrossSection !== undefined &&
-    candidate.crossSectionMm2 <= previousCrossSection
-  ) {
-    throw new Error(`Ampacity entries must be strictly ascending.`);
   }
 
   assertMethodValues(candidate.methods, index);
@@ -127,14 +112,13 @@ function assertAmpacityDataset(
     throw new Error(`Ampacity dataset '${dataset.metadata.id}' must contain entries.`);
   }
 
-  let previousCrossSection: number | undefined;
-  for (const [index, entry] of dataset.entries.entries()) {
-    previousCrossSection = assertAmpacityEntry(
-      entry,
-      index,
-      previousCrossSection,
-    );
-  }
+  const crossSections = dataset.entries.map((entry, index) =>
+    assertAmpacityEntry(entry, index),
+  );
+  assertAscending(
+    crossSections,
+    `Ampacity dataset '${dataset.metadata.id}' entries`,
+  );
 
   return dataset;
 }

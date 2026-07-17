@@ -1,3 +1,11 @@
 export type { DatasetMetadata, DatasetWithMetadata } from "./types.js";
-export { assertDatasetMetadata, loadJsonDataset } from "./load-json-dataset.js";
+export type { ReferenceMetadata } from "./load-json-dataset.js";
+export {
+  assertAscending,
+  assertColumnsMatchSchema,
+  assertDatasetMetadata,
+  assertExpectedRowCount,
+  assertReferenceMetadata,
+  loadJsonDataset,
+} from "./load-json-dataset.js";
 export * from "./materials/index.js";

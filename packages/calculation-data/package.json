@@ -13,7 +13,7 @@
     "build:materials": "node scripts/build-materials-seed.mjs",
     "typecheck": "tsc -b --pretty false",
     "lint": "eslint src --ext .ts",
-    "test": "tsc -b && node ./scripts/copy-json.mjs && node ./tests/run-iec-datasets.mjs && node ./tests/run-materials-seed.mjs && node ./tests/run-materials-dataset.mjs"
+    "test": "tsc -b && node ./scripts/copy-json.mjs && node ./tests/run-load-json-dataset.mjs && node ./tests/run-iec-datasets.mjs && node ./tests/run-materials-seed.mjs && node ./tests/run-materials-dataset.mjs"
   },
   "dependencies": {
     "@elektroplan/contracts": "file:../contracts",

@@ -33,8 +33,13 @@ function isWithinRange(
 export function getHarmonicFactor(
   thirdHarmonicPercent: number,
 ): HarmonicFactorResult | undefined {
+  // Not-found convention: like the other accessors in this package
+  // (getAmpacity, getGroupingFactor, getTempFactor, getProfileById), this
+  // returns undefined rather than throwing for any input that doesn't
+  // resolve to a usable result — including out-of-range input and a
+  // (dataset-integrity-only) null factor for the matched range's basis.
   if (thirdHarmonicPercent < 0) {
-    throw new Error(`thirdHarmonicPercent must be >= 0.`);
+    return undefined;
   }
 
   const entry = harmonicFactorDataset.entries.find((candidate) =>
@@ -51,7 +56,7 @@ export function getHarmonicFactor(
       : entry.neutralFactor;
 
   if (factor === null) {
-    throw new Error(`Authoritative harmonic dataset returned a null factor for the selected basis.`);
+    return undefined;
   }
 
   return {

@@ -1,6 +1,9 @@
 import harmonicFactorsJson from "./data.json" with { type: "json" };
 
-import { loadJsonDataset } from "../../dataset/load-json-dataset.js";
+import {
+  assertReferenceMetadata,
+  loadJsonDataset,
+} from "../../dataset/load-json-dataset.js";
 import type {
   HarmonicFactorDataset,
   HarmonicFactorEntry,
@@ -45,13 +48,15 @@ function assertEntry(entry: HarmonicFactorEntry, index: number): void {
 function assertHarmonicFactorDataset(
   dataset: Readonly<HarmonicFactorDataset>,
 ): Readonly<HarmonicFactorDataset> {
-  if (
-    dataset.metadata.standard !== REQUIRED_STANDARD ||
-    dataset.metadata.revision !== REQUIRED_REVISION ||
-    dataset.metadata.validFrom !== REQUIRED_VALID_FROM
-  ) {
-    throw new Error(`Harmonic factor dataset metadata does not match the authoritative reference.`);
-  }
+  assertReferenceMetadata(
+    dataset.metadata,
+    {
+      standard: REQUIRED_STANDARD,
+      revision: REQUIRED_REVISION,
+      validFrom: REQUIRED_VALID_FROM,
+    },
+    "Harmonic factor",
+  );
 
   if (!Array.isArray(dataset.entries) || dataset.entries.length === 0) {
     throw new Error(`Harmonic factor dataset must contain entries.`);

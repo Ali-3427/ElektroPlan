@@ -1,10 +1,13 @@
 import protectionCatalogJson from "./data.json" with { type: "json" };
 
-import { loadJsonDataset } from "../../dataset/load-json-dataset.js";
+import {
+  assertColumnsMatchSchema,
+  assertReferenceMetadata,
+  loadJsonDataset,
+} from "../../dataset/load-json-dataset.js";
 import type {
   ProtectionCatalogDataset,
   ProtectionCatalogEntry,
-  ProtectionCatalogColumn,
 } from "./types.js";
 import {
   PROTECTION_CATALOG_COLUMNS,
@@ -17,22 +20,6 @@ const DATASET_PATH =
 const REQUIRED_STANDARD = "project-seed-catalog";
 const REQUIRED_REVISION = "v1";
 const REQUIRED_VALID_FROM = "2026-04-19";
-
-function assertColumns(
-  columns: readonly ProtectionCatalogColumn[],
-): readonly ProtectionCatalogColumn[] {
-  if (columns.length !== PROTECTION_CATALOG_COLUMNS.length) {
-    throw new Error(`Protection catalog columns do not match the expected schema.`);
-  }
-
-  for (const [index, column] of PROTECTION_CATALOG_COLUMNS.entries()) {
-    if (columns[index] !== column) {
-      throw new Error(`Protection catalog column ${index} does not match the expected schema.`);
-    }
-  }
-
-  return columns;
-}
 
 function assertEntry(
   entry: ProtectionCatalogEntry,
@@ -105,19 +92,25 @@ function assertEntry(
 function assertProtectionCatalogDataset(
   dataset: Readonly<ProtectionCatalogDataset>,
 ): Readonly<ProtectionCatalogDataset> {
-  if (
-    dataset.metadata.standard !== REQUIRED_STANDARD ||
-    dataset.metadata.revision !== REQUIRED_REVISION ||
-    dataset.metadata.validFrom !== REQUIRED_VALID_FROM
-  ) {
-    throw new Error(`Protection catalog dataset metadata does not match the packaged dataset.`);
-  }
+  assertReferenceMetadata(
+    dataset.metadata,
+    {
+      standard: REQUIRED_STANDARD,
+      revision: REQUIRED_REVISION,
+      validFrom: REQUIRED_VALID_FROM,
+    },
+    "Protection catalog",
+  );
 
   if (!Array.isArray(dataset.columns)) {
     throw new Error(`Protection catalog dataset must declare columns.`);
   }
 
-  assertColumns(dataset.columns);
+  assertColumnsMatchSchema(
+    dataset.columns,
+    PROTECTION_CATALOG_COLUMNS,
+    "Protection catalog columns",
+  );
 
   if (!Array.isArray(dataset.entries) || dataset.entries.length === 0) {
     throw new Error(`Protection catalog dataset must contain entries.`);

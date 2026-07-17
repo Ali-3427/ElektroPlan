@@ -1,3 +1,3 @@
-// Placeholder only until default assumptions data is defined by a later wave.
-export const DEFAULT_ASSUMPTIONS_DATASET_STATUS =
-  "placeholder-non-authoritative";
+// Placeholder module reserved for default-assumptions dataset work in a
+// later wave. No exports yet.
+export {};
