@@ -306,4 +306,75 @@ describe("RecordsService duplicateGroup", () => {
     assert.deepEqual(store.groups.get("g"), sourceGroup);
     assert.deepEqual(store.records.get("r1"), sourceRecord);
   });
+
+  it("rejects a non-string sourceGroupId coming from an untrusted (unknown) caller", () => {
+    const { repositories } = createRepositories();
+    const service = createRecordsService(repositories);
+    const untrusted: unknown = 123;
+
+    assert.throws(
+      () => service.duplicateGroup(untrusted, "X"),
+      /sourceGroupId must be a non-empty string\./,
+    );
+  });
+
+  it("rejects a non-string newTitle coming from an untrusted (unknown) caller", () => {
+    const sourceGroup = createPersistedGroup(
+      { id: "g", title: "G1", version: { contractVersion: "1" } },
+      1,
+    );
+    const { repositories } = createRepositories([sourceGroup]);
+    const service = createRecordsService(repositories);
+    const untrusted: unknown = { not: "a string" };
+
+    assert.throws(
+      () => service.duplicateGroup("g", untrusted),
+      /newTitle must be a non-empty string\./,
+    );
+  });
+});
+
+describe("RecordsService getRecord/deleteRecord/deleteGroup validation", () => {
+  it("getRecord rejects a non-string id coming from an untrusted (unknown) caller", () => {
+    const { repositories } = createRepositories();
+    const service = createRecordsService(repositories);
+    const untrusted: unknown = { id: "r1" };
+
+    assert.throws(
+      () => service.getRecord(untrusted),
+      /Record id must be a non-empty string\./,
+    );
+  });
+
+  it("getRecord rejects an empty string id", () => {
+    const { repositories } = createRepositories();
+    const service = createRecordsService(repositories);
+
+    assert.throws(
+      () => service.getRecord(""),
+      /Record id must be a non-empty string\./,
+    );
+  });
+
+  it("deleteRecord rejects a non-string id coming from an untrusted (unknown) caller", () => {
+    const { repositories } = createRepositories();
+    const service = createRecordsService(repositories);
+    const untrusted: unknown = 42;
+
+    assert.throws(
+      () => service.deleteRecord(untrusted),
+      /Record id must be a non-empty string\./,
+    );
+  });
+
+  it("deleteGroup rejects a non-string id coming from an untrusted (unknown) caller", () => {
+    const { repositories } = createRepositories();
+    const service = createRecordsService(repositories);
+    const untrusted: unknown = null;
+
+    assert.throws(
+      () => service.deleteGroup(untrusted),
+      /Group id must be a non-empty string\./,
+    );
+  });
 });

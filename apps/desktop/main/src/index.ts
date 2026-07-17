@@ -1,7 +1,7 @@
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL, URL } from "node:url";
 
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, session } from "electron";
 
 import { registerIpcHandlers } from "./ipc/register.js";
 import { createServices, type AppServices } from "./services/index.js";
@@ -13,13 +13,7 @@ const devServerUrl =
 let services: AppServices | null = null;
 
 function resolveBundledEntry(relativePath: string): string {
-  const pathname = new URL(relativePath, import.meta.url).pathname;
-
-  if (process.platform === "win32" && pathname.startsWith("/")) {
-    return pathname.slice(1);
-  }
-
-  return pathname;
+  return fileURLToPath(new URL(relativePath, import.meta.url));
 }
 
 function getPreloadEntry(): string {
@@ -45,6 +39,45 @@ function hardenWindow(window: BrowserWindow): void {
     if (!allowed) {
       event.preventDefault();
     }
+  });
+}
+
+// Production loads are a trusted, bundled file:// origin, so script/style can
+// be restricted to 'self'. Dev mode additionally needs the Vite dev server
+// origin (for its HMR client, websocket, and inline/eval-based module
+// transforms) — that relaxation only ever applies when isDevelopment is set,
+// never in a packaged build.
+function buildContentSecurityPolicy(): string {
+  if (isDevelopment && devServerUrl) {
+    return [
+      `default-src 'self' ${devServerUrl}`,
+      `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${devServerUrl}`,
+      `style-src 'self' 'unsafe-inline' ${devServerUrl}`,
+      `connect-src 'self' ${devServerUrl} ws://localhost:* ws://127.0.0.1:*`,
+      `img-src 'self' data: ${devServerUrl}`,
+      "font-src 'self' data:",
+    ].join("; ");
+  }
+
+  return [
+    "default-src 'self'",
+    "script-src 'self'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data:",
+    "font-src 'self' data:",
+  ].join("; ");
+}
+
+function installContentSecurityPolicy(): void {
+  const csp = buildContentSecurityPolicy();
+
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        "Content-Security-Policy": [csp],
+      },
+    });
   });
 }
 
@@ -95,6 +128,8 @@ function closeServices(): void {
 }
 
 app.whenReady().then(() => {
+  installContentSecurityPolicy();
+
   const databasePath = path.join(app.getPath("userData"), "elektroplan.db");
   services = createServices({ databasePath });
 
@@ -124,8 +159,11 @@ app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
-  closeServices();
-
+  // Do not close services here: on darwin the app process stays alive after
+  // all windows close, and a later "activate" would reopen a window whose
+  // already-registered IPC handlers still reference the closed database.
+  // Services are torn down once, on "before-quit", matching actual app
+  // lifetime.
   if (process.platform !== "darwin") {
     app.quit();
   }

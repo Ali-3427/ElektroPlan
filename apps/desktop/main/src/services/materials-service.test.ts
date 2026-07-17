@@ -59,6 +59,24 @@ describe("materials service", () => {
     db.close();
   });
 
+  it("importExcel rejects a payload whose mode isn't 'merge', without an IPC-layer guard", async () => {
+    const { db, service } = newService();
+
+    await assert.rejects(
+      () => service.importExcel({ filePath: FIXTURE_XLSX_PATH, mode: "overwrite" }),
+    );
+
+    db.close();
+  });
+
+  it("importExcel rejects a payload with an empty filePath, without an IPC-layer guard", async () => {
+    const { db, service } = newService();
+
+    await assert.rejects(() => service.importExcel({ filePath: "", mode: "merge" }));
+
+    db.close();
+  });
+
   it("upsertMaterial accepts a persisted material without timestamp metadata leaking into validation", async () => {
     const { db, service } = newService();
 
