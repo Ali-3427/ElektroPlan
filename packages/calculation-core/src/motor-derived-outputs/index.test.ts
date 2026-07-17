@@ -1,9 +1,6 @@
 import { SQRT3 } from "../common/constants/index.js";
-import {
-  calcMotorApparentPower,
-  calcMotorInputPower,
-  calculateMotorDerivedOutputs,
-} from "./index.js";
+import { calcApparentPowerKVA, calcInputPowerKW } from "../common/power-to-current.js";
+import { calculateMotorDerivedOutputs } from "./index.js";
 
 describe("calculateMotorDerivedOutputs", () => {
   it("computes synchronous speed and torque when poles are provided directly", () => {
@@ -27,9 +24,9 @@ describe("calculateMotorDerivedOutputs", () => {
     expect(result.value.slipPercent).toBeNull();
     expect(result.value.shaftTorqueNm).toBeNull();
     expect(result.value.currentA).toBeCloseTo((1000 * 2.2) / (220 * 0.81 * 0.84), 12);
-    expect(result.value.inputPowerKW).toBeCloseTo(calcMotorInputPower(2.2, 81), 12);
+    expect(result.value.inputPowerKW).toBeCloseTo(calcInputPowerKW(2.2, 81), 12);
     expect(result.value.apparentPowerKVA).toBeCloseTo(
-      calcMotorApparentPower(calcMotorInputPower(2.2, 81), 0.84),
+      calcApparentPowerKVA(calcInputPowerKW(2.2, 81), 0.84),
       12,
     );
     expect(result.value.synchronousTorqueNm).toBeCloseTo((9550 * 2.2) / 1500, 12);
@@ -40,6 +37,7 @@ describe("calculateMotorDerivedOutputs", () => {
       P_out: 15,
       phase: 3,
       voltage: 400,
+      voltageMode: "LL",
       cosPhi: 0.86,
       efficiencyPercent: 87,
       polesOrRpm: 1450,
@@ -65,6 +63,42 @@ describe("calculateMotorDerivedOutputs", () => {
       12,
     );
     expect(result.value.shaftTorqueNm).toBeCloseTo((9550 * 15) / 1450, 12);
+  });
+
+  it("computes 3-phase LN current with correct voltage handling (not just SQRT3 blindly)", () => {
+    const result = calculateMotorDerivedOutputs({
+      P_out: 15,
+      phase: 3,
+      voltage: 231,
+      voltageMode: "LN",
+      cosPhi: 0.86,
+      efficiencyPercent: 87,
+      polesOrRpm: 1450,
+      frequency: 50,
+    });
+
+    expect(result.value.currentA).toBeCloseTo(
+      (1000 * 15) / (3 * 231 * 0.87 * 0.86),
+      12,
+    );
+    expect(result.value.currentA).not.toBeCloseTo(
+      (1000 * 15) / (SQRT3 * 231 * 0.87 * 0.86),
+      3,
+    );
+  });
+
+  it("requires voltageMode when phase is 3", () => {
+    expect(() =>
+      calculateMotorDerivedOutputs({
+        P_out: 15,
+        phase: 3,
+        voltage: 400,
+        cosPhi: 0.86,
+        efficiencyPercent: 87,
+        polesOrRpm: 1450,
+        frequency: 50,
+      }),
+    ).toThrow("voltageMode is required when phase is 3.");
   });
 
   it.each([
@@ -164,7 +198,20 @@ describe("calculateMotorDerivedOutputs", () => {
         polesOrRpm: 4,
         frequency: 50,
       },
-      message: "cosPhi must be between 0 and 1.",
+      message: "cosPhi must be between 0 and 1 (exclusive of 0).",
+    },
+    {
+      label: "cosPhi is zero",
+      input: {
+        P_out: 1.1,
+        phase: 1 as const,
+        voltage: 220,
+        cosPhi: 0,
+        efficiencyPercent: 75,
+        polesOrRpm: 4,
+        frequency: 50,
+      },
+      message: "cosPhi must be between 0 and 1 (exclusive of 0).",
     },
     {
       label: "ratio-like efficiencyPercent",
@@ -198,6 +245,7 @@ describe("calculateMotorDerivedOutputs", () => {
         P_out: 1.1,
         phase: 3 as const,
         voltage: 400,
+        voltageMode: "LL" as const,
         cosPhi: 0.8,
         efficiencyPercent: 75,
         polesOrRpm: 4000,

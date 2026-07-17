@@ -1,3 +1,4 @@
+import { ALPHA_COPPER_20, RHO_COPPER_20 } from "../common/constants/index.js";
 import { buildVoltageDropTreeGraph } from "./graph.js";
 import { calculateVoltageDropTree } from "./index.js";
 import { optimizeVoltageDropTree } from "./optimizer.js";
@@ -143,6 +144,41 @@ describe("calculateVoltageDropTree", () => {
       main.segmentDeltaVPercent + a.segmentDeltaVPercent + a1.segmentDeltaVPercent,
       12,
     );
+  });
+
+  it("derives the legacy segment drop from RHO_COPPER_20 with temperature correction, not a fixed 56 S*m/mm^2 conductivity", () => {
+    const temperatureC = 45;
+    const result = calculateVoltageDropTree({
+      segments: [
+        {
+          id: "root",
+          parentId: null,
+          title: "Main",
+          loadPowerKW: 10,
+          lengthM: 100,
+          fixedSectionKey: "300",
+        },
+      ],
+      settings: {
+        baseVoltageV: 400,
+        voltageType: "three",
+        cosPhi: 0.8,
+        efficiencyPercent: 100,
+        limitPercent: 30,
+        conductor: "copper",
+        installation: "underground",
+        temperatureC,
+      },
+    });
+
+    const segment = result.value.segments[0]!;
+    const resistivityAtTempOhmMm2PerM = RHO_COPPER_20 * (1 + ALPHA_COPPER_20 * (temperatureC - 20));
+    const conductivity = 1 / resistivityAtTempOhmMm2PerM;
+    const expectedDropPercent =
+      (100 * 10 * 1000 * 100) /
+      (conductivity * segment.selectedSectionAreaMm2 * 400 * 400);
+
+    expect(segment.segmentDeltaVPercent).toBeCloseTo(expectedDropPercent, 9);
   });
 
   it("uses cosPhi in current but keeps legacy simplified drop independent from cosPhi", () => {

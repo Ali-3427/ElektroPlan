@@ -49,8 +49,8 @@ export type {
   CandidateStep,
 } from "./cable/index.js";
 export {
-  calcApparentPower,
-  calcInputPower,
+  calcApparentPowerKVA,
+  calcInputPowerKW,
   calcSinglePhaseCurrent,
   calcThreePhaseLineLineCurrent,
   calcThreePhaseLineNeutralCurrent,

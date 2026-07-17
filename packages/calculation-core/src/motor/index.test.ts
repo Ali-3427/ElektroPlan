@@ -1,11 +1,8 @@
 import { getMotorTableEntries } from "@elektroplan/calculation-data";
 
 import { SQRT3 } from "../common/constants/index.js";
-import {
-  calculateMotorCurrent,
-  calcApparentPower,
-  calcInputPower,
-} from "./index.js";
+import { calcApparentPowerKVA, calcInputPowerKW } from "../common/power-to-current.js";
+import { calculateMotorCurrent } from "./index.js";
 import { selectCableSectionFromRuler } from "../cable/ruler.js";
 
 describe("calculateMotorCurrent formula mode", () => {
@@ -33,9 +30,9 @@ describe("calculateMotorCurrent formula mode", () => {
     }
 
     expect(result.value.currentA).toBeCloseTo((1000 * 2.2) / (220 * 0.81 * 0.84), 12);
-    expect(result.value.inputPowerKW).toBeCloseTo(calcInputPower(2.2, 0.81), 12);
+    expect(result.value.inputPowerKW).toBeCloseTo(calcInputPowerKW(2.2, 81), 12);
     expect(result.value.apparentPowerKVA).toBeCloseTo(
-      calcApparentPower(calcInputPower(2.2, 0.81), 0.84),
+      calcApparentPowerKVA(calcInputPowerKW(2.2, 81), 0.84),
       12,
     );
   });
@@ -178,7 +175,19 @@ describe("calculateMotorCurrent formula mode", () => {
         cosPhi: 1.01,
         efficiencyPercent: 75,
       },
-      message: "cosPhi must be between 0 and 1.",
+      message: "cosPhi must be between 0 and 1 (exclusive of 0).",
+    },
+    {
+      label: "cosPhi is zero",
+      input: {
+        mode: "formula" as const,
+        phase: 1 as const,
+        P_out: 1.1,
+        voltage: 220,
+        cosPhi: 0,
+        efficiencyPercent: 75,
+      },
+      message: "cosPhi must be between 0 and 1 (exclusive of 0).",
     },
     {
       label: "fractional efficiency percent",

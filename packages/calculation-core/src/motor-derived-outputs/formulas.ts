@@ -1,30 +1,34 @@
-import { SQRT3 } from "../common/constants/index.js";
+import { calcCurrentFromPowerKW } from "../common/power-to-current.js";
+import type { MotorVoltageMode } from "../motor/types.js";
 
 const MAX_INFERRED_POLES = 24;
 const RPM_PER_KILOWATT_TO_NEWTON_METER = 9550;
-
-export function calcMotorInputPower(P_out: number, efficiencyPercent: number): number {
-  return P_out / (efficiencyPercent / 100);
-}
-
-export function calcMotorApparentPower(inputPowerKW: number, cosPhi: number): number {
-  return inputPowerKW / cosPhi;
-}
 
 export function calcDerivedCurrent(input: {
   P_out: number;
   phase: 1 | 3;
   voltage: number;
+  voltageMode?: MotorVoltageMode;
   cosPhi: number;
   efficiencyPercent: number;
 }): number {
-  const efficiency = input.efficiencyPercent / 100;
-
   if (input.phase === 1) {
-    return (1000 * input.P_out) / (input.voltage * efficiency * input.cosPhi);
+    return calcCurrentFromPowerKW({
+      phaseMode: "single-phase",
+      powerKW: input.P_out,
+      voltageV: input.voltage,
+      cosPhi: input.cosPhi,
+      efficiencyPercent: input.efficiencyPercent,
+    });
   }
 
-  return (1000 * input.P_out) / (SQRT3 * input.voltage * efficiency * input.cosPhi);
+  return calcCurrentFromPowerKW({
+    phaseMode: input.voltageMode === "LN" ? "three-phase-ln" : "three-phase-ll",
+    powerKW: input.P_out,
+    voltageV: input.voltage,
+    cosPhi: input.cosPhi,
+    efficiencyPercent: input.efficiencyPercent,
+  });
 }
 
 export function calcSynchronousSpeedRpm(frequency: number, poles: number): number {

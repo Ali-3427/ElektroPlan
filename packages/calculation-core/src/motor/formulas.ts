@@ -1,45 +1,53 @@
-import { SQRT3 } from "../common/constants/index.js";
+import {
+  calcApparentPowerKVA,
+  calcCurrentFromPowerKW,
+  calcInputPowerKW,
+} from "../common/power-to-current.js";
 import type { FormulaModeOutput, MotorVoltageMode } from "./types.js";
-
-export function calcInputPower(
-  outputPowerKW: number,
-  efficiency: number,
-): number {
-  return outputPowerKW / efficiency;
-}
-
-export function calcApparentPower(
-  inputPowerKW: number,
-  cosPhi: number,
-): number {
-  return inputPowerKW / cosPhi;
-}
 
 export function calcSinglePhaseCurrent(
   outputPowerKW: number,
   voltage: number,
-  efficiency: number,
+  efficiencyPercent: number,
   cosPhi: number,
 ): number {
-  return (1000 * outputPowerKW) / (voltage * efficiency * cosPhi);
+  return calcCurrentFromPowerKW({
+    phaseMode: "single-phase",
+    powerKW: outputPowerKW,
+    voltageV: voltage,
+    cosPhi,
+    efficiencyPercent,
+  });
 }
 
 export function calcThreePhaseLineLineCurrent(
   outputPowerKW: number,
   lineToLineVoltage: number,
-  efficiency: number,
+  efficiencyPercent: number,
   cosPhi: number,
 ): number {
-  return (1000 * outputPowerKW) / (SQRT3 * lineToLineVoltage * efficiency * cosPhi);
+  return calcCurrentFromPowerKW({
+    phaseMode: "three-phase-ll",
+    powerKW: outputPowerKW,
+    voltageV: lineToLineVoltage,
+    cosPhi,
+    efficiencyPercent,
+  });
 }
 
 export function calcThreePhaseLineNeutralCurrent(
   outputPowerKW: number,
   lineToNeutralVoltage: number,
-  efficiency: number,
+  efficiencyPercent: number,
   cosPhi: number,
 ): number {
-  return (1000 * outputPowerKW) / (3 * lineToNeutralVoltage * efficiency * cosPhi);
+  return calcCurrentFromPowerKW({
+    phaseMode: "three-phase-ln",
+    powerKW: outputPowerKW,
+    voltageV: lineToNeutralVoltage,
+    cosPhi,
+    efficiencyPercent,
+  });
 }
 
 export function calculateMotorFormula(input: {
@@ -50,9 +58,8 @@ export function calculateMotorFormula(input: {
   efficiencyPercent: number;
   voltageMode?: MotorVoltageMode;
 }): { value: FormulaModeOutput; formulaVariant: string } {
-  const efficiency = input.efficiencyPercent / 100;
-  const inputPowerKW = calcInputPower(input.P_out, efficiency);
-  const apparentPowerKVA = calcApparentPower(inputPowerKW, input.cosPhi);
+  const inputPowerKW = calcInputPowerKW(input.P_out, input.efficiencyPercent);
+  const apparentPowerKVA = calcApparentPowerKVA(inputPowerKW, input.cosPhi);
 
   if (input.phase === 1) {
     return {
@@ -69,7 +76,7 @@ export function calculateMotorFormula(input: {
         currentA: calcSinglePhaseCurrent(
           input.P_out,
           input.voltage,
-          efficiency,
+          input.efficiencyPercent,
           input.cosPhi,
         ),
       },
@@ -92,7 +99,7 @@ export function calculateMotorFormula(input: {
         currentA: calcThreePhaseLineLineCurrent(
           input.P_out,
           input.voltage,
-          efficiency,
+          input.efficiencyPercent,
           input.cosPhi,
         ),
       },
@@ -114,7 +121,7 @@ export function calculateMotorFormula(input: {
       currentA: calcThreePhaseLineNeutralCurrent(
         input.P_out,
         input.voltage,
-        efficiency,
+        input.efficiencyPercent,
         input.cosPhi,
       ),
     },

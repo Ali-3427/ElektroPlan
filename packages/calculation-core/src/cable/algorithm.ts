@@ -20,7 +20,6 @@ import {
 import { calculatePreliminaryCableEstimate } from "./preliminary-estimate.js";
 import {
   CABLE_INSTALLATION_METHODS,
-  type CableInstallationMethod,
   type CablePhase,
   type CableSizingInput,
   type CableSizingOutput,
@@ -78,10 +77,7 @@ function validateCableSizingInput(input: CableSizingInput): void {
   }
 }
 
-export function determineLoadedConductors(
-  phase: CablePhase,
-  _installationMethod: CableInstallationMethod,
-): number {
+export function determineLoadedConductors(phase: CablePhase): number {
   return phase === 3 ? 3 : 2;
 }
 
@@ -135,10 +131,7 @@ export function calculateCableSizingAlgorithm(
 } {
   validateCableSizingInput(input);
 
-  const loadedConductors = determineLoadedConductors(
-    input.phase,
-    input.installationMethod,
-  );
+  const loadedConductors = determineLoadedConductors(input.phase);
 
   assertSupportedLoadedConductors(loadedConductors);
 

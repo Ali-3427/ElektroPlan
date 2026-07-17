@@ -1,4 +1,13 @@
-import { SQRT3 } from "../common/constants/index.js";
+import {
+  ALPHA_ALUMINUM_20,
+  ALPHA_COPPER_20,
+  LEGACY_DROP_PERCENT_MULTIPLIER_SINGLE_PHASE,
+  LEGACY_DROP_PERCENT_MULTIPLIER_THREE_PHASE,
+  RHO_ALUMINUM_20,
+  RHO_COPPER_20,
+} from "../common/constants/index.js";
+import { calcCurrentFromPowerKW } from "../common/power-to-current.js";
+import { calcRTheta } from "../voltage-drop/resistance.js";
 import {
   getAmpacityTable,
   getGroupFactor,
@@ -74,8 +83,11 @@ export interface VoltageDropTreeOptimizationResult {
   readonly optimizationSteps: readonly VoltageDropTreeOptimizationStep[];
 }
 
-function getConductivity(conductor: LegacyConductor): 56 | 35 {
-  return conductor === "copper" ? 56 : 35;
+function getConductivity(conductor: LegacyConductor, temperatureC: number): number {
+  const resistivity20OhmMm2PerM = conductor === "copper" ? RHO_COPPER_20 : RHO_ALUMINUM_20;
+  const alpha20 = conductor === "copper" ? ALPHA_COPPER_20 : ALPHA_ALUMINUM_20;
+  const resistivityAtTempOhmMm2PerM = calcRTheta(resistivity20OhmMm2PerM, alpha20, temperatureC);
+  return 1 / resistivityAtTempOhmMm2PerM;
 }
 
 function getPhaseMode(voltageType: LegacyVoltageType): "single-phase" | "three-phase" {
@@ -87,12 +99,13 @@ function calculateCurrentA(
   settings: SegmentResolvedSettings,
   baseVoltageV: number,
 ): number {
-  const efficiency = settings.efficiencyPercent / 100;
-  const denominator =
-    settings.voltageType === "three"
-      ? SQRT3 * baseVoltageV * settings.cosPhi * efficiency
-      : baseVoltageV * settings.cosPhi * efficiency;
-  return (flowPowerKW * 1000) / denominator;
+  return calcCurrentFromPowerKW({
+    phaseMode: settings.voltageType === "three" ? "three-phase-ll" : "single-phase",
+    powerKW: flowPowerKW,
+    voltageV: baseVoltageV,
+    cosPhi: settings.cosPhi,
+    efficiencyPercent: settings.efficiencyPercent,
+  });
 }
 
 export function calculateLegacyDropPercent(input: {
@@ -100,10 +113,13 @@ export function calculateLegacyDropPercent(input: {
   readonly powerKW: number;
   readonly lengthM: number;
   readonly voltageV: number;
-  readonly conductivity: 56 | 35;
+  readonly conductivity: number;
   readonly areaMm2: number;
 }): number {
-  const multiplier = input.phaseMode === "three-phase" ? 100 : 200;
+  const multiplier =
+    input.phaseMode === "three-phase"
+      ? LEGACY_DROP_PERCENT_MULTIPLIER_THREE_PHASE
+      : LEGACY_DROP_PERCENT_MULTIPLIER_SINGLE_PHASE;
   return (
     (multiplier * input.powerKW * 1000 * input.lengthM) /
     (input.conductivity * input.areaMm2 * input.voltageV * input.voltageV)
@@ -207,7 +223,7 @@ function evaluateCurrentState(input: {
       powerKW: flowPowerKW,
       lengthM: segment.lengthM,
       voltageV: input.globalSettings.baseVoltageV,
-      conductivity: getConductivity(settings.conductor),
+      conductivity: getConductivity(settings.conductor, settings.temperatureC),
       areaMm2: section.areaMm2,
     });
 
@@ -341,7 +357,7 @@ function selectBestCandidate(input: {
       powerKW: candidateFlowPowerKW,
       lengthM: candidateSegment.lengthM,
       voltageV: input.globalSettings.baseVoltageV,
-      conductivity: getConductivity(settings.conductor),
+      conductivity: getConductivity(settings.conductor, settings.temperatureC),
       areaMm2: nextSection.areaMm2,
     });
     const gainPerArea = (currentState.segmentDeltaVPercent - nextDropPercent) / deltaArea;

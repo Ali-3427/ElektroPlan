@@ -6,7 +6,7 @@ import {
   X_AC_FALLBACK_OHM_PER_KM,
 } from "../common/constants/index.js";
 import type { AssumptionEntry } from "../common/types/result.js";
-import { assertInRange, assertOneOf, assertPositive } from "../common/validation/guards.js";
+import { assertOneOf, assertPositive } from "../common/validation/guards.js";
 import {
   calcDCTwoConductorVoltageDrop,
   calcSinglePhaseACTwoConductorVoltageDrop,
@@ -72,7 +72,7 @@ function requireACCosPhi(input: VoltageDropInput): number {
   return input.cosPhi;
 }
 
-function validateVoltageDropInput(input: VoltageDropInput): void {
+function validateVoltageDropInput(input: VoltageDropInput): number | undefined {
   assertOneOf(input.systemType, SYSTEM_TYPES, "systemType");
   assertOneOf(input.impedanceMode, IMPEDANCE_MODES, "impedanceMode");
   assertOneOf(input.mode, LOAD_MODES, "mode");
@@ -100,9 +100,7 @@ function validateVoltageDropInput(input: VoltageDropInput): void {
     assertPositive(input.powerKW, "powerKW");
   }
 
-  if (isACSystem(input.systemType)) {
-    requireACCosPhi(input);
-  }
+  return isACSystem(input.systemType) ? requireACCosPhi(input) : undefined;
 }
 
 function resolveReactance(input: VoltageDropInput): {
@@ -144,19 +142,23 @@ function calculateVoltageDropBySystem(
   cosPhi?: number,
   sinPhi?: number,
 ): number {
+  if (systemType === "dc-two-conductor") {
+    return calcDCTwoConductorVoltageDrop(currentA, lengthM, resistanceOhmPerKm);
+  }
+
+  if (cosPhi === undefined || sinPhi === undefined) {
+    throw new Error("cosPhi and sinPhi must be defined for AC voltage-drop calculations.");
+  }
+
   if (systemType === "single-phase-ac-two-conductor") {
     return calcSinglePhaseACTwoConductorVoltageDrop(
       currentA,
       lengthM,
       resistanceOhmPerKm,
       reactanceOhmPerKm,
-      cosPhi ?? 0,
-      sinPhi ?? 0,
+      cosPhi,
+      sinPhi,
     );
-  }
-
-  if (systemType === "dc-two-conductor") {
-    return calcDCTwoConductorVoltageDrop(currentA, lengthM, resistanceOhmPerKm);
   }
 
   if (systemType === "three-phase-ac-ll") {
@@ -165,8 +167,8 @@ function calculateVoltageDropBySystem(
       lengthM,
       resistanceOhmPerKm,
       reactanceOhmPerKm,
-      cosPhi ?? 0,
-      sinPhi ?? 0,
+      cosPhi,
+      sinPhi,
     );
   }
 
@@ -175,13 +177,13 @@ function calculateVoltageDropBySystem(
     lengthM,
     resistanceOhmPerKm,
     reactanceOhmPerKm,
-    cosPhi ?? 0,
-    sinPhi ?? 0,
+    cosPhi,
+    sinPhi,
   );
 }
 
 export function calculateVoltageDrop(input: VoltageDropInput): VoltageDropResult {
-  validateVoltageDropInput(input);
+  const cosPhi = validateVoltageDropInput(input);
 
   const parallelConductors = input.parallelConductors ?? 1;
   const { resistivityOhmMm2PerM, alpha20 } = getConductorConstants(input.conductorMaterial);
@@ -195,7 +197,6 @@ export function calculateVoltageDrop(input: VoltageDropInput): VoltageDropResult
   const { reactanceOhmPerKm: baseReactanceOhmPerKm, assumptions } = resolveReactance(input);
   const reactanceOhmPerKm = baseReactanceOhmPerKm / parallelConductors;
   const currentA = deriveCurrentForVoltageDrop(input);
-  const cosPhi = isACSystem(input.systemType) ? requireACCosPhi(input) : undefined;
   const sinPhi = cosPhi === undefined ? undefined : calcSinPhi(cosPhi);
   const deltaVVolts = calculateVoltageDropBySystem(
     input.systemType,
