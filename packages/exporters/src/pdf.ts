@@ -187,7 +187,7 @@ export function exportPresentationToPdf(document: PdfPresentationDocument): PdfE
   pages.forEach((page, index) => {
     const content = buildContentStream(page.lines);
     const contentObjectId = contentObjectIds[index]!;
-    const stream = `<< /Length ${content.length} >>\nstream\n${content}\nendstream`;
+    const stream = `<< /Length ${encodeUtf8(content).length} >>\nstream\n${content}\nendstream`;
     objects[contentObjectId] = createPdfObject(contentObjectId, stream);
   });
 
@@ -209,6 +209,11 @@ export function exportPresentationToPdf(document: PdfPresentationDocument): PdfE
   objects[catalogId] = createPdfObject(catalogId, `<< /Type /Catalog /Pages ${pagesId} 0 R >>`);
 
   let pdf = "%PDF-1.4\n";
+  // The final output is emitted via encodeUtf8(pdf), so offsets must track actual
+  // UTF-8 byte positions, not pdf.length (JS string / UTF-16 code-unit count) — those
+  // diverge as soon as any multi-byte character has been appended. Track a running
+  // byte offset incrementally (encoding only each new chunk) to stay linear.
+  let byteOffset = encodeUtf8(pdf).length;
   const offsets: number[] = [0];
 
   for (let id = 1; id < objects.length; id += 1) {
@@ -218,11 +223,12 @@ export function exportPresentationToPdf(document: PdfPresentationDocument): PdfE
       continue;
     }
 
-    offsets[id] = pdf.length;
+    offsets[id] = byteOffset;
     pdf += objectBody;
+    byteOffset += encodeUtf8(objectBody).length;
   }
 
-  const xrefOffset = pdf.length;
+  const xrefOffset = byteOffset;
   pdf += `xref\n0 ${objects.length}\n`;
   pdf += "0000000000 65535 f \n";
 

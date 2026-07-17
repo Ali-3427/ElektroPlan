@@ -16,44 +16,7 @@ export interface FlatEntry {
 }
 
 export function encodeUtf8(value: string): Uint8Array {
-  const bytes: number[] = [];
-
-  for (let index = 0; index < value.length; index += 1) {
-    const codePoint = value.codePointAt(index);
-
-    if (codePoint === undefined) {
-      continue;
-    }
-
-    if (codePoint > 0xffff) {
-      index += 1;
-    }
-
-    if (codePoint <= 0x7f) {
-      bytes.push(codePoint);
-      continue;
-    }
-
-    if (codePoint <= 0x7ff) {
-      bytes.push(0xc0 | (codePoint >> 6));
-      bytes.push(0x80 | (codePoint & 0x3f));
-      continue;
-    }
-
-    if (codePoint <= 0xffff) {
-      bytes.push(0xe0 | (codePoint >> 12));
-      bytes.push(0x80 | ((codePoint >> 6) & 0x3f));
-      bytes.push(0x80 | (codePoint & 0x3f));
-      continue;
-    }
-
-    bytes.push(0xf0 | (codePoint >> 18));
-    bytes.push(0x80 | ((codePoint >> 12) & 0x3f));
-    bytes.push(0x80 | ((codePoint >> 6) & 0x3f));
-    bytes.push(0x80 | (codePoint & 0x3f));
-  }
-
-  return Uint8Array.from(bytes);
+  return new TextEncoder().encode(value);
 }
 
 export function escapeXml(value: string): string {
