@@ -111,10 +111,9 @@ export type {
 } from "./types.js";
 export { validateMotorCurrentInput } from "./validate.js";
 export {
-  calcApparentPower,
-  calcInputPower,
   calcSinglePhaseCurrent,
   calcThreePhaseLineLineCurrent,
   calcThreePhaseLineNeutralCurrent,
 } from "./formulas.js";
+export { calcApparentPowerKVA, calcInputPowerKW } from "../common/power-to-current.js";
 export { calculateMotorFromTable, getMotorTableDataVersion } from "./table-mode.js";

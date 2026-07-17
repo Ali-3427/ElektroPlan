@@ -1,9 +1,6 @@
 import { SQRT3 } from "../common/constants/index.js";
-import {
-  calcMotorApparentPower,
-  calcMotorInputPower,
-  calculateMotorDerivedOutputs,
-} from "./index.js";
+import { calcApparentPowerKVA, calcInputPowerKW } from "../common/power-to-current.js";
+import { calculateMotorDerivedOutputs } from "./index.js";
 
 describe("calculateMotorDerivedOutputs", () => {
   it("computes synchronous speed and torque when poles are provided directly", () => {
@@ -27,9 +24,9 @@ describe("calculateMotorDerivedOutputs", () => {
     expect(result.value.slipPercent).toBeNull();
     expect(result.value.shaftTorqueNm).toBeNull();
     expect(result.value.currentA).toBeCloseTo((1000 * 2.2) / (220 * 0.81 * 0.84), 12);
-    expect(result.value.inputPowerKW).toBeCloseTo(calcMotorInputPower(2.2, 81), 12);
+    expect(result.value.inputPowerKW).toBeCloseTo(calcInputPowerKW(2.2, 81), 12);
     expect(result.value.apparentPowerKVA).toBeCloseTo(
-      calcMotorApparentPower(calcMotorInputPower(2.2, 81), 0.84),
+      calcApparentPowerKVA(calcInputPowerKW(2.2, 81), 0.84),
       12,
     );
     expect(result.value.synchronousTorqueNm).toBeCloseTo((9550 * 2.2) / 1500, 12);

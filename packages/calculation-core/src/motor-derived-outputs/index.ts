@@ -1,8 +1,7 @@
 import type { MotorDerivedOutputsInput, MotorDerivedOutputsResult } from "./types.js";
+import { calcApparentPowerKVA, calcInputPowerKW } from "../common/power-to-current.js";
 import {
   calcDerivedCurrent,
-  calcMotorApparentPower,
-  calcMotorInputPower,
   calcSlipRatio,
   calcSynchronousSpeedRpm,
   calcTorqueNm,
@@ -47,8 +46,8 @@ export function calculateMotorDerivedOutputs(
   const operatingSpeedRpm = polesSource === "user" ? null : polesOrRpm;
   const slipRatio =
     operatingSpeedRpm === null ? null : calcSlipRatio(synchronousSpeedRpm, operatingSpeedRpm);
-  const inputPowerKW = calcMotorInputPower(P_out, efficiencyPercent);
-  const apparentPowerKVA = calcMotorApparentPower(inputPowerKW, cosPhi);
+  const inputPowerKW = calcInputPowerKW(P_out, efficiencyPercent);
+  const apparentPowerKVA = calcApparentPowerKVA(inputPowerKW, cosPhi);
   const currentA = calcDerivedCurrent({
     P_out,
     phase,
@@ -102,12 +101,11 @@ export function calculateMotorDerivedOutputs(
 export type { MotorDerivedOutputsInput, MotorDerivedOutputsResult, MotorDerivedOutputsValue } from "./types.js";
 export {
   calcDerivedCurrent,
-  calcMotorApparentPower,
-  calcMotorInputPower,
   calcSlipRatio,
   calcSynchronousSpeedRpm,
   calcTorqueNm,
   inferPoleCountFromRpm,
   isPoleCount,
 } from "./formulas.js";
+export { calcApparentPowerKVA, calcInputPowerKW } from "../common/power-to-current.js";
 export { validateMotorDerivedOutputsInput } from "./validate.js";

@@ -1,20 +1,8 @@
-import {
-  calcApparentPowerKVA,
-  calcCurrentFromPowerKW,
-  calcInputPowerKW,
-} from "../common/power-to-current.js";
+import { calcCurrentFromPowerKW } from "../common/power-to-current.js";
 import type { MotorVoltageMode } from "../motor/types.js";
 
 const MAX_INFERRED_POLES = 24;
 const RPM_PER_KILOWATT_TO_NEWTON_METER = 9550;
-
-export function calcMotorInputPower(P_out: number, efficiencyPercent: number): number {
-  return calcInputPowerKW(P_out, efficiencyPercent);
-}
-
-export function calcMotorApparentPower(inputPowerKW: number, cosPhi: number): number {
-  return calcApparentPowerKVA(inputPowerKW, cosPhi);
-}
 
 export function calcDerivedCurrent(input: {
   P_out: number;
