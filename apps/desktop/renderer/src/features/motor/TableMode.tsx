@@ -76,6 +76,7 @@ export function TableMode() {
       if (requestSeq.current !== requestId) return;
       setPageState((current) => ({ ...current, result: response }));
     } catch (caughtError) {
+      if (requestSeq.current !== requestId) return;
       setError(caughtError instanceof Error ? caughtError.message : "Hesaplama hatasi.");
     } finally {
       if (requestSeq.current === requestId) {

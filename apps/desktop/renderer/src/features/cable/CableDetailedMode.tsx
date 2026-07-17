@@ -418,6 +418,7 @@ export function CableDetailedMode() {
         lastRequest: submittedRequest,
       }));
     } catch (caughtError) {
+      if (requestSeq.current !== requestId) return;
       setError(
         caughtError instanceof Error ? caughtError.message : "Hesaplama hatası.",
       );

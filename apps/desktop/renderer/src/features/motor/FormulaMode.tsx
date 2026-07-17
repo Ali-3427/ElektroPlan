@@ -127,6 +127,7 @@ export function FormulaMode() {
         },
       }));
     } catch (e) {
+      if (requestSeq.current !== requestId) return;
       setError(e instanceof Error ? e.message : "Hesaplama hatasi.");
     } finally {
       if (requestSeq.current === requestId) {

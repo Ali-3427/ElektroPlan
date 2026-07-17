@@ -101,7 +101,7 @@ export function VoltageDropPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSave, setShowSave] = useState(false);
-  const submitInFlightRef = useRef(false);
+  const requestSeq = useRef(0);
   const shouldApplyDefaultsRef = useRef(isFreshVoltageDropPageState(pageState));
 
   useEffect(() => {
@@ -164,17 +164,18 @@ export function VoltageDropPage() {
   });
 
   async function handleSubmit() {
-    if (!submission || loading || submitInFlightRef.current) {
+    if (!submission || loading) {
       return;
     }
 
-    submitInFlightRef.current = true;
+    const requestId = ++requestSeq.current;
     setLoading(true);
     setError(null);
 
     try {
       const bridge = getBridge() as VoltageDropGroupBridge;
       const response = await bridge.calc.voltageDropGroup(submission.request);
+      if (requestSeq.current !== requestId) return;
       const submittedRequest = submission.request;
       setPageState((current) => ({
         ...current,
@@ -182,10 +183,12 @@ export function VoltageDropPage() {
         lastRequest: submittedRequest,
       }));
     } catch (caughtError) {
+      if (requestSeq.current !== requestId) return;
       setError(caughtError instanceof Error ? caughtError.message : "Hesaplama hatasi.");
     } finally {
-      submitInFlightRef.current = false;
-      setLoading(false);
+      if (requestSeq.current === requestId) {
+        setLoading(false);
+      }
     }
   }
 
