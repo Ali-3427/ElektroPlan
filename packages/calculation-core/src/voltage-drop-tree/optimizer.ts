@@ -7,6 +7,7 @@ import {
   RHO_COPPER_20,
 } from "../common/constants/index.js";
 import { calcCurrentFromPowerKW } from "../common/power-to-current.js";
+import { calcRTheta } from "../voltage-drop/resistance.js";
 import {
   getAmpacityTable,
   getGroupFactor,
@@ -85,7 +86,7 @@ export interface VoltageDropTreeOptimizationResult {
 function getConductivity(conductor: LegacyConductor, temperatureC: number): number {
   const resistivity20OhmMm2PerM = conductor === "copper" ? RHO_COPPER_20 : RHO_ALUMINUM_20;
   const alpha20 = conductor === "copper" ? ALPHA_COPPER_20 : ALPHA_ALUMINUM_20;
-  const resistivityAtTempOhmMm2PerM = resistivity20OhmMm2PerM * (1 + alpha20 * (temperatureC - 20));
+  const resistivityAtTempOhmMm2PerM = calcRTheta(resistivity20OhmMm2PerM, alpha20, temperatureC);
   return 1 / resistivityAtTempOhmMm2PerM;
 }
 

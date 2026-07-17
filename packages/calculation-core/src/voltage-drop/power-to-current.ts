@@ -26,10 +26,6 @@ export function calculateCurrentFromPower(
   baseVoltageV: number,
   cosPhi?: number,
 ): number {
-  if (systemType !== "dc-two-conductor" && cosPhi === undefined) {
-    throw new RangeError("cosPhi is required for AC power mode.");
-  }
-
   return calcCurrentFromPowerKW({
     phaseMode: toPhaseMode(systemType),
     powerKW,

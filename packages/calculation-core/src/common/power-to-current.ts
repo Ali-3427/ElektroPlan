@@ -1,4 +1,4 @@
-import { SQRT3 } from "./constants/index.js";
+import { SQRT3, THREE_PHASE_COUNT } from "./constants/index.js";
 
 export type PowerToCurrentPhaseMode =
   | "dc"
@@ -20,7 +20,7 @@ function getPhaseMultiplier(phaseMode: PowerToCurrentPhaseMode): number {
   }
 
   if (phaseMode === "three-phase-ln") {
-    return 3;
+    return THREE_PHASE_COUNT;
   }
 
   return 1;
