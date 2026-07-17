@@ -176,6 +176,43 @@ while ((turkishStreamMatch = streamRegex.exec(rawPdfBytes)) !== null) {
 
 assert.ok(checkedAtLeastOneStream, "expected at least one PDF content stream to check");
 
+// Regression: the xref table's recorded object offsets (and startxref) must be the
+// actual byte positions in the final UTF-8-encoded output, not JS string (UTF-16
+// code-unit) positions accumulated while building the PDF. Turkish text earlier in
+// the document pushes a byte-length/code-unit-length mismatch into every object
+// serialized afterward, corrupting every later xref entry even though each object's
+// own /Length value (checked above) is correct.
+const xrefSectionMatch = rawPdfBytes.match(/xref\n0 (\d+)\n((?:\d{10} \d{5} [nf] \n)+)trailer/);
+assert.ok(xrefSectionMatch, "expected a parsable xref table");
+const objectCount = Number(xrefSectionMatch[1]);
+const entryLines = xrefSectionMatch[2].trim().split("\n");
+assert.equal(entryLines.length, objectCount, "expected one xref entry per object (including the free entry)");
+
+let checkedAtLeastOneOffset = false;
+for (let id = 1; id < objectCount; id += 1) {
+  const recordedOffset = Number(entryLines[id].slice(0, 10));
+  const expectedOffset = rawPdfBytes.indexOf(`\n${id} 0 obj`) + 1;
+  assert.ok(expectedOffset > 0, `expected to find "${id} 0 obj" in the PDF body`);
+  assert.equal(
+    recordedOffset,
+    expectedOffset,
+    `xref offset for object ${id} is ${recordedOffset}, but "${id} 0 obj" actually starts at byte ${expectedOffset}`,
+  );
+  checkedAtLeastOneOffset = true;
+}
+assert.ok(checkedAtLeastOneOffset, "expected at least one xref object entry to check");
+
+const startxrefMatch = rawPdfBytes.match(/startxref\n(\d+)\n%%EOF/);
+assert.ok(startxrefMatch, "expected a parsable startxref trailer");
+const recordedXrefOffset = Number(startxrefMatch[1]);
+const expectedXrefOffset = rawPdfBytes.indexOf("\nxref\n") + 1;
+assert.ok(expectedXrefOffset > 0, "expected to find the xref table in the PDF body");
+assert.equal(
+  recordedXrefOffset,
+  expectedXrefOffset,
+  `startxref is ${recordedXrefOffset}, but "xref" actually starts at byte ${expectedXrefOffset}`,
+);
+
 // Regression: SpreadsheetML Boolean cells must render "1"/"0", not "true"/"false".
 // (Unreachable via exportCalculationsToExcel today since all cells are built from
 // pre-stringified values, but createCellXml must still be correct if a boolean/number
