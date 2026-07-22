@@ -1,0 +1,15 @@
+{
+  "metadata": {
+    "id": "iec-60364-5-52-minimum-section-v1",
+    "standard": "IEC 60364-5-52",
+    "revision": "v1",
+    "source": "Tablo 52.2",
+    "validFrom": "2026-07-22",
+    "notes": "Guc/aydinlatma ve sinyal devreleri icin minimum mekanik kesit."
+  },
+  "entries": [
+    { "circuitKind": "power", "material": "copper", "minSectionMm2": 1.5 },
+    { "circuitKind": "power", "material": "aluminum", "minSectionMm2": 16 },
+    { "circuitKind": "signal", "material": "copper", "minSectionMm2": 0.5 }
+  ]
+}
