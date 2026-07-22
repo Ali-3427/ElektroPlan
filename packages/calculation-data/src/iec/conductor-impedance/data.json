@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "id": "iec-60228-conductor-impedance-v1",
+    "standard": "IEC 60228 / IEC 60287",
+    "revision": "v1",
+    "source": "IEC 60228 Ed.3 Class 2 (R, Nexans) + SMC Cables XLPE (X)",
+    "validFrom": "2026-07-22",
+    "notes": "R = 20C DC max; X = 50Hz XLPE. Al 1.5-6mm2 tablolanmaz (null)."
+  },
+  "referenceTemperatureC": 20,
+  "entries": [
+    { "crossSectionMm2": 1.5, "resistance20OhmPerKm": { "copper": 12.1, "aluminum": null }, "reactanceOhmPerKm": { "multicore": 0.115, "singleCoreTrefoil": null, "singleCoreFlatTouching": null } },
+    { "crossSectionMm2": 2.5, "resistance20OhmPerKm": { "copper": 7.41, "aluminum": null }, "reactanceOhmPerKm": { "multicore": 0.107, "singleCoreTrefoil": null, "singleCoreFlatTouching": null } },
+    { "crossSectionMm2": 4, "resistance20OhmPerKm": { "copper": 4.61, "aluminum": null }, "reactanceOhmPerKm": { "multicore": 0.093, "singleCoreTrefoil": null, "singleCoreFlatTouching": null } },
+    { "crossSectionMm2": 6, "resistance20OhmPerKm": { "copper": 3.08, "aluminum": null }, "reactanceOhmPerKm": { "multicore": 0.089, "singleCoreTrefoil": null, "singleCoreFlatTouching": null } },
+    { "crossSectionMm2": 10, "resistance20OhmPerKm": { "copper": 1.83, "aluminum": 3.08 }, "reactanceOhmPerKm": { "multicore": 0.084, "singleCoreTrefoil": null, "singleCoreFlatTouching": null } },
+    { "crossSectionMm2": 16, "resistance20OhmPerKm": { "copper": 1.15, "aluminum": 1.91 }, "reactanceOhmPerKm": { "multicore": 0.081, "singleCoreTrefoil": 0.114, "singleCoreFlatTouching": 0.172 } },
+    { "crossSectionMm2": 25, "resistance20OhmPerKm": { "copper": 0.727, "aluminum": 1.20 }, "reactanceOhmPerKm": { "multicore": 0.081, "singleCoreTrefoil": 0.113, "singleCoreFlatTouching": 0.172 } },
+    { "crossSectionMm2": 35, "resistance20OhmPerKm": { "copper": 0.524, "aluminum": 0.868 }, "reactanceOhmPerKm": { "multicore": 0.079, "singleCoreTrefoil": 0.110, "singleCoreFlatTouching": 0.167 } },
+    { "crossSectionMm2": 50, "resistance20OhmPerKm": { "copper": 0.387, "aluminum": 0.641 }, "reactanceOhmPerKm": { "multicore": 0.075, "singleCoreTrefoil": 0.106, "singleCoreFlatTouching": 0.161 } },
+    { "crossSectionMm2": 70, "resistance20OhmPerKm": { "copper": 0.268, "aluminum": 0.443 }, "reactanceOhmPerKm": { "multicore": 0.074, "singleCoreTrefoil": 0.103, "singleCoreFlatTouching": 0.160 } },
+    { "crossSectionMm2": 95, "resistance20OhmPerKm": { "copper": 0.193, "aluminum": 0.320 }, "reactanceOhmPerKm": { "multicore": 0.073, "singleCoreTrefoil": 0.098, "singleCoreFlatTouching": 0.155 } },
+    { "crossSectionMm2": 120, "resistance20OhmPerKm": { "copper": 0.153, "aluminum": 0.253 }, "reactanceOhmPerKm": { "multicore": 0.072, "singleCoreTrefoil": 0.097, "singleCoreFlatTouching": 0.153 } },
+    { "crossSectionMm2": 150, "resistance20OhmPerKm": { "copper": 0.124, "aluminum": 0.206 }, "reactanceOhmPerKm": { "multicore": 0.072, "singleCoreTrefoil": 0.097, "singleCoreFlatTouching": 0.153 } },
+    { "crossSectionMm2": 185, "resistance20OhmPerKm": { "copper": 0.101, "aluminum": 0.164 }, "reactanceOhmPerKm": { "multicore": 0.072, "singleCoreTrefoil": 0.096, "singleCoreFlatTouching": 0.153 } },
+    { "crossSectionMm2": 240, "resistance20OhmPerKm": { "copper": 0.0775, "aluminum": 0.125 }, "reactanceOhmPerKm": { "multicore": 0.071, "singleCoreTrefoil": 0.092, "singleCoreFlatTouching": 0.147 } },
+    { "crossSectionMm2": 300, "resistance20OhmPerKm": { "copper": 0.0620, "aluminum": 0.100 }, "reactanceOhmPerKm": { "multicore": 0.070, "singleCoreTrefoil": 0.090, "singleCoreFlatTouching": 0.147 } }
+  ]
+}
