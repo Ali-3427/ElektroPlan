@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "id": "iec-60364-5-52-cable-ampacity-copper-pvc-70c-3loaded-v1",
+    "standard": "IEC 60364-5-52",
+    "revision": "v1",
+    "source": "Tablo B.52.4 (VERILER.md transkripsiyonu)",
+    "validFrom": "2026-07-22",
+    "notes": "PVC 70C, 3 yuklu iletken. D1=kanal, D2=dogrudan gomulu. Ikincil transkripsiyon — draft. DATA-INTEGRITY: 120 mm2 D1 hucresi VERILER.md'de 192 olarak dogrulandi (292 degil — bkz. VERILER.md satir 109)."
+  },
+  "material": "copper",
+  "insulation": "PVC",
+  "insulationTemperatureC": 70,
+  "loadedConductors": 3,
+  "referenceAmbientAirC": 30,
+  "referenceGroundC": 20,
+  "confidence": "draft",
+  "entries": [
+    { "crossSectionMm2": 1.5, "methods": { "A1": 13.5, "A2": 13,   "B1": 15.5, "B2": 15,  "C": 17.5, "D1": 18,  "D2": 19 } },
+    { "crossSectionMm2": 2.5, "methods": { "A1": 18,   "A2": 17.5, "B1": 21,   "B2": 20,  "C": 24,   "D1": 24,  "D2": 24 } },
+    { "crossSectionMm2": 4,   "methods": { "A1": 24,   "A2": 23,   "B1": 28,   "B2": 27,  "C": 32,   "D1": 30,  "D2": 33 } },
+    { "crossSectionMm2": 6,   "methods": { "A1": 31,   "A2": 29,   "B1": 36,   "B2": 34,  "C": 41,   "D1": 38,  "D2": 41 } },
+    { "crossSectionMm2": 10,  "methods": { "A1": 42,   "A2": 39,   "B1": 50,   "B2": 46,  "C": 57,   "D1": 50,  "D2": 54 } },
+    { "crossSectionMm2": 16,  "methods": { "A1": 56,   "A2": 52,   "B1": 68,   "B2": 62,  "C": 76,   "D1": 64,  "D2": 70 } },
+    { "crossSectionMm2": 25,  "methods": { "A1": 73,   "A2": 68,   "B1": 89,   "B2": 80,  "C": 96,   "D1": 82,  "D2": 92 } },
+    { "crossSectionMm2": 35,  "methods": { "A1": 89,   "A2": 83,   "B1": 110,  "B2": 99,  "C": 119,  "D1": 98,  "D2": 110 } },
+    { "crossSectionMm2": 50,  "methods": { "A1": 108,  "A2": 99,   "B1": 134,  "B2": 118, "C": 144,  "D1": 116, "D2": 130 } },
+    { "crossSectionMm2": 70,  "methods": { "A1": 136,  "A2": 125,  "B1": 171,  "B2": 149, "C": 184,  "D1": 143, "D2": 162 } },
+    { "crossSectionMm2": 95,  "methods": { "A1": 164,  "A2": 150,  "B1": 207,  "B2": 179, "C": 223,  "D1": 169, "D2": 193 } },
+    { "crossSectionMm2": 120, "methods": { "A1": 188,  "A2": 172,  "B1": 239,  "B2": 206, "C": 259,  "D1": 192, "D2": 220 } },
+    { "crossSectionMm2": 150, "methods": { "A1": 216,  "A2": 196,  "B1": 262,  "B2": 225, "C": 299,  "D1": 217, "D2": 246 } },
+    { "crossSectionMm2": 185, "methods": { "A1": 245,  "A2": 223,  "B1": 296,  "B2": 255, "C": 341,  "D1": 243, "D2": 278 } },
+    { "crossSectionMm2": 240, "methods": { "A1": 286,  "A2": 261,  "B1": 346,  "B2": 297, "C": 403,  "D1": 280, "D2": 320 } },
+    { "crossSectionMm2": 300, "methods": { "A1": 328,  "A2": 298,  "B1": 394,  "B2": 339, "C": 464,  "D1": 316, "D2": 359 } }
+  ]
+}

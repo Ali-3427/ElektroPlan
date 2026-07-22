@@ -1,0 +1,34 @@
+{
+  "metadata": {
+    "id": "iec-60364-5-52-cable-ampacity-aluminum-xlpe-90c-3loaded-v1",
+    "standard": "IEC 60364-5-52",
+    "revision": "v1",
+    "source": "Tablo B.52.5 (VERILER.md transkripsiyonu)",
+    "validFrom": "2026-07-22",
+    "notes": "XLPE/EPR 90C, 3 yuklu iletken, aluminyum. 1.5 mm2 tablolanmamis; D2 2.5-10 mm2 icin bos (null). Ikincil transkripsiyon — draft."
+  },
+  "material": "aluminum",
+  "insulation": "XLPE/EPR",
+  "insulationTemperatureC": 90,
+  "loadedConductors": 3,
+  "referenceAmbientAirC": 30,
+  "referenceGroundC": 20,
+  "confidence": "draft",
+  "entries": [
+    { "crossSectionMm2": 2.5, "methods": { "A1": 19,  "A2": 18,  "B1": 22,  "B2": 21,  "C": 24,  "D1": 22,  "D2": null } },
+    { "crossSectionMm2": 4,   "methods": { "A1": 25,  "A2": 24,  "B1": 29,  "B2": 28,  "C": 32,  "D1": 28,  "D2": null } },
+    { "crossSectionMm2": 6,   "methods": { "A1": 32,  "A2": 31,  "B1": 38,  "B2": 35,  "C": 41,  "D1": 35,  "D2": null } },
+    { "crossSectionMm2": 10,  "methods": { "A1": 44,  "A2": 41,  "B1": 52,  "B2": 48,  "C": 57,  "D1": 46,  "D2": null } },
+    { "crossSectionMm2": 16,  "methods": { "A1": 58,  "A2": 55,  "B1": 71,  "B2": 64,  "C": 76,  "D1": 59,  "D2": 64 } },
+    { "crossSectionMm2": 25,  "methods": { "A1": 76,  "A2": 71,  "B1": 93,  "B2": 84,  "C": 90,  "D1": 75,  "D2": 82 } },
+    { "crossSectionMm2": 35,  "methods": { "A1": 94,  "A2": 87,  "B1": 116, "B2": 103, "C": 112, "D1": 90,  "D2": 98 } },
+    { "crossSectionMm2": 50,  "methods": { "A1": 113, "A2": 104, "B1": 140, "B2": 124, "C": 136, "D1": 106, "D2": 117 } },
+    { "crossSectionMm2": 70,  "methods": { "A1": 142, "A2": 131, "B1": 179, "B2": 156, "C": 174, "D1": 130, "D2": 144 } },
+    { "crossSectionMm2": 95,  "methods": { "A1": 171, "A2": 157, "B1": 217, "B2": 188, "C": 211, "D1": 154, "D2": 172 } },
+    { "crossSectionMm2": 120, "methods": { "A1": 197, "A2": 180, "B1": 251, "B2": 216, "C": 245, "D1": 174, "D2": 197 } },
+    { "crossSectionMm2": 150, "methods": { "A1": 226, "A2": 206, "B1": 267, "B2": 240, "C": 283, "D1": 197, "D2": 220 } },
+    { "crossSectionMm2": 185, "methods": { "A1": 256, "A2": 233, "B1": 300, "B2": 272, "C": 323, "D1": 220, "D2": 250 } },
+    { "crossSectionMm2": 240, "methods": { "A1": 300, "A2": 273, "B1": 351, "B2": 318, "C": 382, "D1": 253, "D2": 290 } },
+    { "crossSectionMm2": 300, "methods": { "A1": 344, "A2": 313, "B1": 402, "B2": 364, "C": 440, "D1": 286, "D2": 326 } }
+  ]
+}

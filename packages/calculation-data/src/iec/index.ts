@@ -1,4 +1,6 @@
 export * from "./ampacity/index.js";
+export * from "./cable-ampacity/index.js";
+export * from "./cable-methods/index.js";
 export * from "./cable-ruler/index.js";
 export * from "./conductor-impedance/index.js";
 export * from "./grouping-arrangements/index.js";
