@@ -9,3 +9,4 @@ export {
   loadJsonDataset,
 } from "./load-json-dataset.js";
 export * from "./materials/index.js";
+export { DATA_CONFIDENCE_VALUES, assertConfidence, type DataConfidence } from "./confidence.js";

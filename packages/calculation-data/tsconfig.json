@@ -4,6 +4,7 @@
     "baseUrl": ".",
     "rootDir": "src",
     "outDir": "dist",
+    "types": ["vitest/globals"],
     "paths": {
       "@elektroplan/contracts": ["../contracts/src/index.ts"]
     }
