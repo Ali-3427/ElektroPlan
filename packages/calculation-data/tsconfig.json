@@ -7,8 +7,7 @@
     "types": ["vitest/globals"],
     "paths": {
       "@elektroplan/contracts": ["../contracts/src/index.ts"]
-    },
-    "types": ["vitest/globals"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.json"],
   "references": [
