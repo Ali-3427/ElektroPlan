@@ -9,9 +9,14 @@
   },
   "air": [
     { "temperatureC": 20, "pvc70": 1.12, "xlpeEpr90": 1.08 },
+    { "temperatureC": 25, "pvc70": 1.06, "xlpeEpr90": 1.04 },
     { "temperatureC": 30, "pvc70": 1, "xlpeEpr90": 1 },
+    { "temperatureC": 35, "pvc70": 0.94, "xlpeEpr90": 0.96 },
     { "temperatureC": 40, "pvc70": 0.87, "xlpeEpr90": 0.91 },
-    { "temperatureC": 50, "pvc70": 0.71, "xlpeEpr90": 0.82 }
+    { "temperatureC": 45, "pvc70": 0.79, "xlpeEpr90": 0.87 },
+    { "temperatureC": 50, "pvc70": 0.71, "xlpeEpr90": 0.82 },
+    { "temperatureC": 55, "pvc70": 0.61, "xlpeEpr90": 0.76 },
+    { "temperatureC": 60, "pvc70": 0.5, "xlpeEpr90": 0.71 }
   ],
   "underground": [
     { "temperatureC": 10, "pvc70": 1.1, "xlpeEpr90": 1.07 },

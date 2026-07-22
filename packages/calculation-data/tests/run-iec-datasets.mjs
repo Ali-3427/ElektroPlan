@@ -108,7 +108,7 @@ assert.equal(
 assert.equal(
   getTempFactor({
     method: "A1",
-    temperatureC: 25,
+    temperatureC: 15,
     insulation: "XLPE_EPR_90C",
   }),
   undefined,
