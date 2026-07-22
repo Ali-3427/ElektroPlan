@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "id": "iec-60364-5-52-grouping-arrangements-v1",
+    "standard": "IEC 60364-5-52",
+    "revision": "v1",
+    "source": "Tablo B.52.17 (bunched) + B.52.20 (buried ducts)",
+    "validFrom": "2026-07-22",
+    "notes": "Duzenlemeye gore kG. Kismi/dogrulanmamis satirlar eklenmedi."
+  },
+  "arrangements": [
+    {
+      "id": "bunched",
+      "sourceTable": "B.52.17",
+      "entries": [
+        { "circuits": 1, "factor": 1 },
+        { "circuits": 2, "factor": 0.8 },
+        { "circuits": 3, "factor": 0.7 },
+        { "circuits": 4, "factor": 0.65 },
+        { "circuits": 5, "factor": 0.6 },
+        { "circuits": 6, "factor": 0.57 },
+        { "circuits": 7, "factor": 0.54 },
+        { "circuits": 8, "factor": 0.52 },
+        { "circuits": 9, "factor": 0.5 },
+        { "circuits": 12, "factor": 0.45 },
+        { "circuits": 16, "factor": 0.41 },
+        { "circuits": 20, "factor": 0.38 }
+      ]
+    },
+    {
+      "id": "buried-in-ducts",
+      "sourceTable": "B.52.20",
+      "entries": [
+        { "circuits": 2, "factor": 0.75 },
+        { "circuits": 3, "factor": 0.65 },
+        { "circuits": 4, "factor": 0.6 },
+        { "circuits": 5, "factor": 0.55 },
+        { "circuits": 6, "factor": 0.5 }
+      ]
+    },
+    {
+      "id": "single-layer-tray-horizontal",
+      "sourceTable": "B.52.20",
+      "entries": []
+    }
+  ]
+}
