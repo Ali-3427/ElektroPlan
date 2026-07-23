@@ -1,3 +1,4 @@
+export * from "./adiabatic-k/index.js";
 export * from "./ampacity/index.js";
 export * from "./cable-ampacity/index.js";
 export * from "./cable-methods/index.js";

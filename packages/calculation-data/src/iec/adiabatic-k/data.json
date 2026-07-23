@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "id": "iec-60364-5-54-adiabatic-k-v1",
+    "standard": "IEC 60364-5-54",
+    "revision": "v1",
+    "source": "Tablo A.54.4 (line) + Tablo A.54.2 (pe-bunched)",
+    "validFrom": "2026-07-23",
+    "notes": "line = kablo ici cekirdek, baslangic = calisma sicakligi. pe-bunched = ayri PE, baslangic 30C."
+  },
+  "entries": [
+    { "material": "copper", "insulation": "PVC", "role": "line", "initialTempC": 70, "finalTempC": 160, "k": 115, "aboveSectionMm2": null },
+    { "material": "copper", "insulation": "PVC", "role": "line", "initialTempC": 70, "finalTempC": 140, "k": 103, "aboveSectionMm2": 300 },
+    { "material": "copper", "insulation": "XLPE/EPR", "role": "line", "initialTempC": 90, "finalTempC": 250, "k": 143, "aboveSectionMm2": null },
+    { "material": "aluminum", "insulation": "PVC", "role": "line", "initialTempC": 70, "finalTempC": 160, "k": 76, "aboveSectionMm2": null },
+    { "material": "aluminum", "insulation": "PVC", "role": "line", "initialTempC": 70, "finalTempC": 140, "k": 68, "aboveSectionMm2": 300 },
+    { "material": "aluminum", "insulation": "XLPE/EPR", "role": "line", "initialTempC": 90, "finalTempC": 250, "k": 94, "aboveSectionMm2": null },
+
+    { "material": "copper", "insulation": "PVC", "role": "pe-bunched", "initialTempC": 30, "finalTempC": 160, "k": 143, "aboveSectionMm2": null },
+    { "material": "copper", "insulation": "PVC", "role": "pe-bunched", "initialTempC": 30, "finalTempC": 140, "k": 133, "aboveSectionMm2": 300 },
+    { "material": "copper", "insulation": "XLPE/EPR", "role": "pe-bunched", "initialTempC": 30, "finalTempC": 250, "k": 176, "aboveSectionMm2": null },
+    { "material": "aluminum", "insulation": "PVC", "role": "pe-bunched", "initialTempC": 30, "finalTempC": 160, "k": 95, "aboveSectionMm2": null },
+    { "material": "aluminum", "insulation": "PVC", "role": "pe-bunched", "initialTempC": 30, "finalTempC": 140, "k": 88, "aboveSectionMm2": 300 },
+    { "material": "aluminum", "insulation": "XLPE/EPR", "role": "pe-bunched", "initialTempC": 30, "finalTempC": 250, "k": 116, "aboveSectionMm2": null }
+  ]
+}
