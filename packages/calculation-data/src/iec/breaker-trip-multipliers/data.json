@@ -1,0 +1,15 @@
+{
+  "metadata": {
+    "id": "iec-60898-1-breaker-trip-multipliers-v1",
+    "standard": "IEC 60898-1",
+    "revision": "v1",
+    "source": "IEC 60898-1 anlik acma bantlari",
+    "validFrom": "2026-07-23",
+    "notes": "designMultiplier = ust sinir; Zs kontrolunde acmayi garanti eder."
+  },
+  "entries": [
+    { "curve": "B", "minMultiplier": 3, "maxMultiplier": 5, "designMultiplier": 5 },
+    { "curve": "C", "minMultiplier": 5, "maxMultiplier": 10, "designMultiplier": 10 },
+    { "curve": "D", "minMultiplier": 10, "maxMultiplier": 20, "designMultiplier": 20 }
+  ]
+}
