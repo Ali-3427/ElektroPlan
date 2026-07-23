@@ -35,18 +35,9 @@ describe("evaluateCandidate (standard mode)", () => {
   });
 });
 
-// NOTE: designCurrentA/sizingCurrentA are 22 A rather than the 60 A used in the
-// task brief's Step 1 listing. The v1 seed protection catalog
-// (packages/calculation-data/src/iec/protection-catalog/data.json) only carries
-// MCB curve-C devices up to 32 A — lookupProtectionDevice(minimumNominalCurrentA:
-// 60, families: ["MCB"], curve: "C") returns no candidates, which fails "device"
-// and short-circuits the chain before pe/shortCircuit/loopImpedance/neutral ever
-// run. 22 A is the same design current already proven to resolve to a 25 A MCB
-// in criteria/device-coordination.test.ts, so it exercises the full 8-criterion
-// chain against real (not synthetic) catalog data. See task-13-report.md.
 function detailedCtx(sectionMm2: number) {
   const input: CableSelectionInput = {
-    mode: "detailed", designCurrentA: 22, phase: 3, circuitKind: "power",
+    mode: "detailed", designCurrentA: 60, phase: 3, circuitKind: "power",
     conductorMaterial: "copper", insulation: "XLPE/EPR", installationMethod: "C",
     ambientTemperatureC: 30, groupedCircuits: 1, groupingArrangement: "bunched",
     thirdHarmonicPercent: 0, voltageDropLimitPercent: 5,
@@ -62,7 +53,7 @@ function detailedCtx(sectionMm2: number) {
     mode: input.mode, sectionMm2, material: "copper" as const, insulation: "XLPE/EPR" as const,
     circuitKind: "power" as const,
     ampacityKey: { material: "copper" as const, insulation: "XLPE/EPR" as const, loadedConductors: 3 as const },
-    method: "C" as const, kTotal: 1, sizingCurrentA: 22, input,
+    method: "C" as const, kTotal: 1, sizingCurrentA: 60, input,
   };
 }
 
@@ -77,7 +68,7 @@ describe("evaluateCandidate (detailed mode)", () => {
 
   it("threads the selected device into later criteria", () => {
     const e = evaluateCandidate(detailedCtx(25));
-    expect(e.device?.nominalCurrentA).toBeGreaterThanOrEqual(22);
+    expect(e.device?.nominalCurrentA).toBeGreaterThanOrEqual(60);
     const loop = e.criteria.find((c) => c.id === "loopImpedance");
     expect(loop?.status).not.toBe("skipped");
   });
