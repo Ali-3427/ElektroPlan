@@ -1,0 +1,15 @@
+{
+  "metadata": {
+    "id": "iec-60364-5-54-pe-conductor-table-v1",
+    "standard": "IEC 60364-5-54",
+    "revision": "v1",
+    "source": "Tablo 54.2",
+    "validFrom": "2026-07-23",
+    "notes": "S<=16 -> esit; 16<S<=35 -> 16mm2 sabit; S>35 -> S/2. Satir sirasi anlamlidir."
+  },
+  "entries": [
+    { "lineSectionMaxMm2": 16, "rule": "equal", "peSectionMm2": null },
+    { "lineSectionMaxMm2": 35, "rule": "fixed", "peSectionMm2": 16 },
+    { "lineSectionMaxMm2": null, "rule": "half", "peSectionMm2": null }
+  ]
+}
