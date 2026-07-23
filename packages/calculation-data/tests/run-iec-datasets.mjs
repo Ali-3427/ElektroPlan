@@ -170,7 +170,7 @@ assert.equal(
 assert.equal(protectionCatalogDataset.metadata.standard, "project-seed-catalog");
 assert.equal(protectionCatalogDataset.metadata.revision, "v1");
 assert.equal(protectionCatalogDataset.metadata.validFrom, "2026-04-19");
-assert.equal(protectionCatalogDataset.entries.length, 21);
+assert.equal(protectionCatalogDataset.entries.length, 30);
 assert.deepEqual(
   lookupProtectionDevice({
     minimumNominalCurrentA: 18,
