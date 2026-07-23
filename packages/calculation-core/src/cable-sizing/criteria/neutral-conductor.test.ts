@@ -24,4 +24,22 @@ describe("neutral conductor criterion", () => {
     expect(r.neutralSectionMm2).toBe(60);
     expect(r.outcome.detail.basis).toBe("reduced-balanced");
   });
+
+  it("prioritizes harmonic check over small-section check (ordering regression test)", () => {
+    const r = evaluateNeutralConductor({ sectionMm2: 10, phase: 3, thirdHarmonicPercent: 40, material: "copper" });
+    expect(r.neutralSectionMm2).toBe(10);
+    expect(r.outcome.detail.basis).toBe("harmonic-driven");
+  });
+
+  it("respects aluminum 25 mm² threshold for small sections", () => {
+    const r = evaluateNeutralConductor({ sectionMm2: 25, phase: 3, thirdHarmonicPercent: 0, material: "aluminum" });
+    expect(r.neutralSectionMm2).toBe(25);
+    expect(r.outcome.detail.basis).toBe("small-section");
+  });
+
+  it("allows reduction on large balanced aluminum three-phase circuits", () => {
+    const r = evaluateNeutralConductor({ sectionMm2: 30, phase: 3, thirdHarmonicPercent: 0, material: "aluminum" });
+    expect(r.neutralSectionMm2).toBe(15);
+    expect(r.outcome.detail.basis).toBe("reduced-balanced");
+  });
 });
