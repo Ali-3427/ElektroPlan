@@ -1,5 +1,5 @@
 import {
-  getCableCrossSections, getCableAmpacityConfidence, type CableAmpacityKey,
+  getCableCrossSections, getCableAmpacityConfidence, getCableAmpacityDataset, type CableAmpacityKey,
   type CableMethodCode, type LoadedConductorCount,
 } from "@elektroplan/calculation-data";
 import { ENGINE_VERSION } from "../version.js";
@@ -12,6 +12,11 @@ import type { CableSelectionInput, CableSelectionResult, CandidateEvaluation } f
 
 function loadedConductors(phase: 1 | 3): LoadedConductorCount {
   return phase === 3 ? 3 : 2;
+}
+
+function createDataVersion(key: CableAmpacityKey): string {
+  const ds = getCableAmpacityDataset(key);
+  return `${ds.metadata.id}:${ds.metadata.revision}|confidence=${ds.confidence}`;
 }
 
 export function selectCable(input: CableSelectionInput): CableSelectionResult {
@@ -64,7 +69,7 @@ export function selectCable(input: CableSelectionInput): CableSelectionResult {
         warnings,
         assumptions: evaluation.vdResult.assumptions,
         formulaVariant: `cable-sizing-${input.mode}-ascending-scan`,
-        dataVersion: getCableAmpacityConfidence(ampacityKey),
+        dataVersion: createDataVersion(ampacityKey),
         engineVersion: ENGINE_VERSION,
       };
     }

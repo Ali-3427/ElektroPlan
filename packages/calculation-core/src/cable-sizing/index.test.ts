@@ -41,6 +41,12 @@ describe("selectCable (standard mode)", () => {
     expect(r.warnings.some((w) => w.code === "unverified-data")).toBe(true);
   });
 
+  it("stamps a composite dataVersion including ampacity + confidence", () => {
+    const r = selectCable(base());
+    expect(r.dataVersion).toContain("cable-ampacity");
+    expect(r.dataVersion).toContain("confidence=draft");
+  });
+
   it("throws when no section satisfies the active criteria", () => {
     expect(() => selectCable({ ...base(), designCurrentA: 100000 })).toThrow();
   });
