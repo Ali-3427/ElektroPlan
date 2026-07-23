@@ -17,4 +17,41 @@ export function validateSelectionInput(input: CableSelectionInput): void {
   }
   assertPositive(input.voltageDropLimitPercent, "voltageDropLimitPercent");
   if (input.extraCorrectionFactor !== undefined) assertPositive(input.extraCorrectionFactor, "extraCorrectionFactor");
+  validateDetailed(input);
+}
+
+function validateDetailed(input: CableSelectionInput): void {
+  if (input.mode !== "detailed") return;
+  const d = input.detailed;
+  if (d === undefined) {
+    throw new RangeError("detailed mode requires the 'detailed' options block.");
+  }
+  assertOneOf(d.earthingSystem, ["TN", "TT"] as const, "detailed.earthingSystem");
+  assertOneOf(d.circuitRole, ["final", "distribution"] as const, "detailed.circuitRole");
+  assertOneOf(d.breakerCurve, ["B", "C", "D"] as const, "detailed.breakerCurve");
+  assertOneOf(d.peLocation, ["in-cable", "separate"] as const, "detailed.peLocation");
+
+  if (d.parallelConductors !== undefined) {
+    assertPositive(d.parallelConductors, "detailed.parallelConductors");
+    if (!Number.isInteger(d.parallelConductors)) {
+      throw new RangeError("detailed.parallelConductors must be an integer.");
+    }
+  }
+  if (d.soilThermalResistivityKmPerW !== undefined) {
+    assertPositive(d.soilThermalResistivityKmPerW, "detailed.soilThermalResistivityKmPerW");
+  }
+  if (d.burialDepthM !== undefined) assertPositive(d.burialDepthM, "detailed.burialDepthM");
+  if (d.shortCircuit !== undefined) {
+    assertPositive(d.shortCircuit.prospectiveFaultKa, "detailed.shortCircuit.prospectiveFaultKa");
+    assertPositive(d.shortCircuit.clearingTimeS, "detailed.shortCircuit.clearingTimeS");
+  }
+  if (d.loopImpedance.method === "calculated") {
+    assertPositive(d.loopImpedance.prospectiveEarthFaultKa, "detailed.loopImpedance.prospectiveEarthFaultKa");
+  }
+  if (d.loopImpedance.method === "measured") {
+    if (typeof d.loopImpedance.sourceImpedanceOhm !== "number") {
+      throw new RangeError("loopImpedance 'measured' requires sourceImpedanceOhm.");
+    }
+    assertPositive(d.loopImpedance.sourceImpedanceOhm, "detailed.loopImpedance.sourceImpedanceOhm");
+  }
 }

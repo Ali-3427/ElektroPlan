@@ -3,6 +3,8 @@ import type {
   CableConductorMaterial,
   CableInsulation,
   CableMethodCode,
+  ConductorArrangement,
+  ProtectionDeviceCurve,
 } from "@elektroplan/calculation-data";
 import type { VoltageDropResult, VoltageDropSystemType } from "../voltage-drop/index.js";
 
@@ -36,6 +38,41 @@ export interface CandidateEvaluation {
   accepted: boolean;
 }
 
+export type EarthingSystem = "TN" | "TT";
+export type CircuitRole = "final" | "distribution";
+export type PeLocation = "in-cable" | "separate";
+
+export type LoopImpedanceSource =
+  | { method: "estimated" }
+  | { method: "calculated"; prospectiveEarthFaultKa: number }
+  | { method: "measured"; sourceImpedanceOhm: number };
+
+export interface ShortCircuitInput {
+  prospectiveFaultKa: number;
+  clearingTimeS: number;
+}
+
+export interface DetailedOptions {
+  earthingSystem: EarthingSystem;
+  circuitRole: CircuitRole;
+  breakerCurve: ProtectionDeviceCurve;
+  peLocation: PeLocation;
+  conductorArrangement: ConductorArrangement;
+  parallelConductors?: number;
+  soilThermalResistivityKmPerW?: number;
+  burialDepthM?: number;
+  shortCircuit?: ShortCircuitInput;
+  loopImpedance: LoopImpedanceSource;
+}
+
+export interface SelectedDevice {
+  id: string;
+  nominalCurrentA: number;
+  curve: ProtectionDeviceCurve | null;
+  family: string;
+  i2A: number;
+}
+
 export interface CableSelectionInput {
   mode: CableSizingMode;
   designCurrentA: number;
@@ -56,6 +93,7 @@ export interface CableSelectionInput {
     cosPhi: number;
   };
   extraCorrectionFactor?: number;
+  detailed?: DetailedOptions;
 }
 
 export interface CableSelectionOutput {
@@ -70,6 +108,11 @@ export interface CableSelectionOutput {
   izRequiredA: number;
   candidateTrace: readonly CandidateEvaluation[];
   vdResult: VoltageDropResult;
+  kS: number;
+  kD: number;
+  selectedDevice: SelectedDevice | null;
+  peSectionMm2: number | null;
+  neutralSectionMm2: number | null;
 }
 
 export type CableSelectionResult = CalculationResult<CableSelectionOutput>;
