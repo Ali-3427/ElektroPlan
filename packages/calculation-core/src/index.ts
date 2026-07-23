@@ -157,3 +157,16 @@ export type {
 } from "./voltage-drop-tree/types.js";
 export type { VoltageDropTreeOptimizationStep } from "./voltage-drop-tree/optimizer.js";
 export { ENGINE_VERSION } from "./version.js";
+export { selectCable, ACTIVE_CRITERIA, CRITERION_IDS } from "./cable-sizing/index.js";
+export type {
+  CableSizingMode,
+  CableSelectionInput,
+  CableSelectionOutput,
+  CableSelectionResult,
+  CriterionId,
+  CriterionOutcome,
+  CriterionStatus,
+  CandidateEvaluation,
+  CircuitKind,
+  CablePhase as CableSizingPhase,
+} from "./cable-sizing/index.js";
