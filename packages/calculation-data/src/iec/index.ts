@@ -14,4 +14,5 @@ export * from "./minimum-section/index.js";
 export * from "./motor-ruler/index.js";
 export * from "./pe-conductor-table/index.js";
 export * from "./protection-catalog/index.js";
+export * from "./soil-resistivity-factors/index.js";
 export * from "./temperature-factors/index.js";

@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "id": "iec-60364-5-52-soil-resistivity-factors-v1",
+    "standard": "IEC 60364-5-52",
+    "revision": "v1",
+    "source": "Tablo B.52.16 (kanal-gomulu)",
+    "validFrom": "2026-07-23",
+    "notes": "Yalniz metot D1/D2. Dogrudan-gomulu varyanti standartta sayisal yayimlanmaz (null)."
+  },
+  "referenceResistivityKmPerW": 2.5,
+  "confidence": "draft",
+  "entries": [
+    { "thermalResistivityKmPerW": 0.5, "buriedInDucts": 1.28, "buriedDirect": null },
+    { "thermalResistivityKmPerW": 0.7, "buriedInDucts": 1.2, "buriedDirect": null },
+    { "thermalResistivityKmPerW": 1.0, "buriedInDucts": 1.18, "buriedDirect": null },
+    { "thermalResistivityKmPerW": 1.5, "buriedInDucts": 1.1, "buriedDirect": null },
+    { "thermalResistivityKmPerW": 2.0, "buriedInDucts": 1.05, "buriedDirect": null },
+    { "thermalResistivityKmPerW": 2.5, "buriedInDucts": 1, "buriedDirect": null },
+    { "thermalResistivityKmPerW": 3.0, "buriedInDucts": 0.96, "buriedDirect": null }
+  ]
+}
