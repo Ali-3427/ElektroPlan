@@ -89,6 +89,18 @@ function assertEntry(
   }
 }
 
+function assertCoordinationFields(
+  entry: Record<string, unknown>,
+  index: number,
+): void {
+  if (typeof entry.i2Multiplier !== "number" || entry.i2Multiplier <= 0) {
+    throw new Error(`Protection catalog entry ${index} must declare a positive 'i2Multiplier'.`);
+  }
+  if (entry.letThroughI2t !== null && !Array.isArray(entry.letThroughI2t)) {
+    throw new Error(`Protection catalog entry ${index} 'letThroughI2t' must be an array or null.`);
+  }
+}
+
 function assertProtectionCatalogDataset(
   dataset: Readonly<ProtectionCatalogDataset>,
 ): Readonly<ProtectionCatalogDataset> {
@@ -117,7 +129,10 @@ function assertProtectionCatalogDataset(
   }
 
   const seenIds = new Set<string>();
-  dataset.entries.forEach((entry, index) => assertEntry(entry, index, seenIds));
+  dataset.entries.forEach((entry, index) => {
+    assertEntry(entry, index, seenIds);
+    assertCoordinationFields(entry as unknown as Record<string, unknown>, index);
+  });
   return dataset;
 }
 

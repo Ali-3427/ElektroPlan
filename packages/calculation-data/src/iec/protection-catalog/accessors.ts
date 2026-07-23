@@ -1,5 +1,6 @@
 import { protectionCatalogDataset } from "./dataset.js";
 import type {
+  LetThroughPoint,
   ProtectionCatalogEntry,
   ProtectionDeviceLookupQuery,
 } from "./types.js";
@@ -70,4 +71,31 @@ export function lookupProtectionDevice(
 
   matches.sort(compareEntries);
   return query.limit === undefined ? matches : matches.slice(0, query.limit);
+}
+
+/** Linear interpolation between catalog let-through points; null when absent. */
+export function getLetThroughI2t(
+  entryId: string,
+  prospectiveFaultKa: number,
+): number | null {
+  const entry = protectionCatalogDataset.entries.find((e) => e.id === entryId);
+  const points = entry?.letThroughI2t;
+  if (entry === undefined || points === null || points === undefined || points.length === 0) {
+    return null;
+  }
+  const sorted = [...points].sort((a, b) => a.prospectiveFaultKa - b.prospectiveFaultKa);
+  const first = sorted[0] as LetThroughPoint;
+  const last = sorted[sorted.length - 1] as LetThroughPoint;
+  if (prospectiveFaultKa <= first.prospectiveFaultKa) return first.i2tA2s;
+  if (prospectiveFaultKa >= last.prospectiveFaultKa) return last.i2tA2s;
+  for (let i = 1; i < sorted.length; i += 1) {
+    const lo = sorted[i - 1] as LetThroughPoint;
+    const hi = sorted[i] as LetThroughPoint;
+    if (prospectiveFaultKa <= hi.prospectiveFaultKa) {
+      const span = hi.prospectiveFaultKa - lo.prospectiveFaultKa;
+      const ratio = span === 0 ? 0 : (prospectiveFaultKa - lo.prospectiveFaultKa) / span;
+      return lo.i2tA2s + ratio * (hi.i2tA2s - lo.i2tA2s);
+    }
+  }
+  return last.i2tA2s;
 }

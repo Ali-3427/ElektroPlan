@@ -1,6 +1,7 @@
-export { lookupProtectionDevice } from "./accessors.js";
+export { getLetThroughI2t, lookupProtectionDevice } from "./accessors.js";
 export { protectionCatalogDataset } from "./dataset.js";
 export type {
+  LetThroughPoint,
   ProtectionCatalogColumn,
   ProtectionCatalogDataset,
   ProtectionCatalogEntry,

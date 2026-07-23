@@ -24,10 +24,17 @@ export const PROTECTION_CATALOG_COLUMNS = [
   "residualCurrentMa",
   "voltageV",
   "sourceNote",
+  "i2Multiplier",
+  "letThroughI2t",
 ] as const;
 
 export type ProtectionCatalogColumn =
   (typeof PROTECTION_CATALOG_COLUMNS)[number];
+
+export interface LetThroughPoint {
+  prospectiveFaultKa: number;
+  i2tA2s: number;
+}
 
 export interface ProtectionCatalogEntry {
   id: string;
@@ -39,6 +46,8 @@ export interface ProtectionCatalogEntry {
   residualCurrentMa: number | null;
   voltageV: number;
   sourceNote: string;
+  i2Multiplier: number;
+  letThroughI2t: readonly LetThroughPoint[] | null;
 }
 
 export interface ProtectionCatalogDataset extends DatasetWithMetadata {

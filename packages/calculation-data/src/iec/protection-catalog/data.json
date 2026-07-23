@@ -16,7 +16,9 @@
     "curve",
     "residualCurrentMa",
     "voltageV",
-    "sourceNote"
+    "sourceNote",
+    "i2Multiplier",
+    "letThroughI2t"
   ],
   "entries": [
     {
@@ -28,7 +30,9 @@
       "curve": "B",
       "residualCurrentMa": null,
       "voltageV": 230,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     },
     {
       "id": "mcb-1p-b-10a-6ka",
@@ -39,7 +43,9 @@
       "curve": "B",
       "residualCurrentMa": null,
       "voltageV": 230,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     },
     {
       "id": "mcb-1p-c-16a-6ka",
@@ -50,7 +56,9 @@
       "curve": "C",
       "residualCurrentMa": null,
       "voltageV": 230,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     },
     {
       "id": "mcb-1p-c-20a-6ka",
@@ -61,7 +69,9 @@
       "curve": "C",
       "residualCurrentMa": null,
       "voltageV": 230,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     },
     {
       "id": "mcb-1p-c-25a-6ka",
@@ -72,7 +82,9 @@
       "curve": "C",
       "residualCurrentMa": null,
       "voltageV": 230,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     },
     {
       "id": "mcb-1p-c-32a-6ka",
@@ -83,7 +95,9 @@
       "curve": "C",
       "residualCurrentMa": null,
       "voltageV": 230,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     },
     {
       "id": "mcb-3p-c-16a-10ka",
@@ -94,7 +108,9 @@
       "curve": "C",
       "residualCurrentMa": null,
       "voltageV": 400,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     },
     {
       "id": "mcb-3p-c-20a-10ka",
@@ -105,7 +121,9 @@
       "curve": "C",
       "residualCurrentMa": null,
       "voltageV": 400,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     },
     {
       "id": "mcb-3p-c-25a-10ka",
@@ -116,7 +134,22 @@
       "curve": "C",
       "residualCurrentMa": null,
       "voltageV": 400,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
+    },
+    {
+      "id": "mcb-3p-c-25a-6ka",
+      "family": "MCB",
+      "poles": 3,
+      "nominalCurrentA": 25,
+      "breakingCapacityKa": 6,
+      "curve": "C",
+      "residualCurrentMa": null,
+      "voltageV": 400,
+      "sourceNote": "Seed catalog entry added for Task 8 device-coordination criterion (25A 3-pole C-curve MCB).",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     },
     {
       "id": "mcb-3p-c-32a-10ka",
@@ -127,7 +160,9 @@
       "curve": "C",
       "residualCurrentMa": null,
       "voltageV": 400,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     },
     {
       "id": "mccb-3p-40a-25ka",
@@ -138,7 +173,9 @@
       "curve": null,
       "residualCurrentMa": null,
       "voltageV": 400,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     },
     {
       "id": "mccb-3p-63a-25ka",
@@ -149,7 +186,9 @@
       "curve": null,
       "residualCurrentMa": null,
       "voltageV": 400,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     },
     {
       "id": "mccb-3p-80a-25ka",
@@ -160,7 +199,9 @@
       "curve": null,
       "residualCurrentMa": null,
       "voltageV": 400,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     },
     {
       "id": "rcbo-2p-c-16a-30ma-6ka",
@@ -171,7 +212,9 @@
       "curve": "C",
       "residualCurrentMa": 30,
       "voltageV": 230,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     },
     {
       "id": "rcbo-2p-c-20a-30ma-6ka",
@@ -182,7 +225,9 @@
       "curve": "C",
       "residualCurrentMa": 30,
       "voltageV": 230,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     },
     {
       "id": "rcbo-2p-c-32a-30ma-6ka",
@@ -193,7 +238,9 @@
       "curve": "C",
       "residualCurrentMa": 30,
       "voltageV": 230,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     },
     {
       "id": "rcd-2p-25a-30ma",
@@ -204,7 +251,9 @@
       "curve": null,
       "residualCurrentMa": 30,
       "voltageV": 230,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     },
     {
       "id": "rcd-2p-40a-30ma",
@@ -215,7 +264,9 @@
       "curve": null,
       "residualCurrentMa": 30,
       "voltageV": 230,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     },
     {
       "id": "rcd-4p-40a-30ma",
@@ -226,7 +277,9 @@
       "curve": null,
       "residualCurrentMa": 30,
       "voltageV": 400,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     },
     {
       "id": "rcd-4p-63a-30ma",
@@ -237,7 +290,9 @@
       "curve": null,
       "residualCurrentMa": 30,
       "voltageV": 400,
-      "sourceNote": "Seed catalog starter entry."
+      "sourceNote": "Seed catalog starter entry.",
+      "i2Multiplier": 1.45,
+      "letThroughI2t": null
     }
   ]
 }
