@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "id": "iec-60364-4-41-disconnection-times-v1",
+    "standard": "IEC 60364-4-41",
+    "revision": "v1",
+    "source": "Tablo 41.1 (AC)",
+    "validFrom": "2026-07-23",
+    "notes": "Bant (u0MinV, u0MaxV]. TN dagitim 5s, TT dagitim 1s tum bantlarda."
+  },
+  "entries": [
+    { "system": "TN", "circuitRole": "final", "u0MinV": 50, "u0MaxV": 120, "maxSeconds": 0.8 },
+    { "system": "TN", "circuitRole": "final", "u0MinV": 120, "u0MaxV": 230, "maxSeconds": 0.4 },
+    { "system": "TN", "circuitRole": "final", "u0MinV": 230, "u0MaxV": 400, "maxSeconds": 0.2 },
+    { "system": "TN", "circuitRole": "final", "u0MinV": 400, "u0MaxV": null, "maxSeconds": 0.1 },
+    { "system": "TN", "circuitRole": "distribution", "u0MinV": 50, "u0MaxV": null, "maxSeconds": 5 },
+
+    { "system": "TT", "circuitRole": "final", "u0MinV": 50, "u0MaxV": 120, "maxSeconds": 0.3 },
+    { "system": "TT", "circuitRole": "final", "u0MinV": 120, "u0MaxV": 230, "maxSeconds": 0.2 },
+    { "system": "TT", "circuitRole": "final", "u0MinV": 230, "u0MaxV": 400, "maxSeconds": 0.07 },
+    { "system": "TT", "circuitRole": "final", "u0MinV": 400, "u0MaxV": null, "maxSeconds": 0.04 },
+    { "system": "TT", "circuitRole": "distribution", "u0MinV": 50, "u0MaxV": null, "maxSeconds": 1 }
+  ]
+}
