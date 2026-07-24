@@ -1,12 +1,12 @@
 import { evaluateShortCircuit } from "./short-circuit.js";
 
 describe("short-circuit criterion", () => {
-  it("skips when neither catalog let-through nor manual data exists", () => {
+  it("is not-applicable when neither catalog let-through nor manual data exists", () => {
     const r = evaluateShortCircuit({
       sectionMm2: 16, material: "copper", insulation: "XLPE/EPR",
       deviceId: null, manual: null,
     });
-    expect(r.outcome.status).toBe("skipped");
+    expect(r.outcome.status).toBe("not-applicable");
     expect(r.outcome.detail.reason).toBe("no-fault-energy-data");
   });
 

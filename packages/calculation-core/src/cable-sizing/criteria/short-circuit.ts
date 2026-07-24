@@ -34,7 +34,7 @@ export function evaluateShortCircuit(args: ShortCircuitArgs): { outcome: Criteri
   const i2t = catalogI2t ?? manualI2t;
   if (i2t === null) {
     return {
-      outcome: { id: "shortCircuit", status: "skipped", detail: { reason: "no-fault-energy-data" } },
+      outcome: { id: "shortCircuit", status: "not-applicable", detail: { reason: "no-fault-energy-data" } },
     };
   }
 
