@@ -375,6 +375,84 @@ export interface CableResponse {
   engineVersion: string;
 }
 
+// ── Cable Select ──────────────────────────────────────────────────────────────
+export type CableSelectMode = "standard" | "detailed";
+export type CableMethodCode = "A1" | "A2" | "B1" | "B2" | "C" | "D1" | "D2";
+export type GroupingArrangement = "bunched" | "single-layer-tray-horizontal" | "buried-in-ducts";
+export type ConductorArrangement = "multicore" | "singleCoreTrefoil" | "singleCoreFlatTouching";
+export type CriterionId =
+  | "mechanical" | "thermal" | "device" | "voltageDrop"
+  | "pe" | "shortCircuit" | "loopImpedance" | "neutral";
+export type CriterionStatus = "pass" | "fail" | "not-applicable" | "skipped";
+
+export interface CriterionOutcome {
+  id: CriterionId;
+  status: CriterionStatus;
+  detail: Readonly<Record<string, number | string | null>>;
+}
+export interface CandidateEvaluation {
+  sectionMm2: number;
+  criteria: readonly CriterionOutcome[];
+  failedAt: CriterionId | null;
+  accepted: boolean;
+}
+export interface SelectedDevice {
+  id: string; nominalCurrentA: number; curve: string | null; family: string; i2A: number;
+}
+export interface CableDetailedOptions {
+  earthingSystem: "TN" | "TT";
+  circuitRole: "final" | "distribution";
+  breakerCurve: "B" | "C" | "D";
+  peLocation: "in-cable" | "separate";
+  conductorArrangement: ConductorArrangement;
+  parallelConductors?: number;
+  soilThermalResistivityKmPerW?: number;
+  burialDepthM?: number;
+  shortCircuit?: { prospectiveFaultKa: number; clearingTimeS: number };
+  loopImpedance:
+    | { method: "estimated" }
+    | { method: "calculated"; prospectiveEarthFaultKa: number }
+    | { method: "measured"; sourceImpedanceOhm: number };
+}
+export interface CableSelectRequest {
+  mode: CableSelectMode;
+  designCurrentA: number;
+  phase: 1 | 3;
+  circuitKind: "power" | "signal";
+  conductorMaterial: "copper" | "aluminum";
+  insulation: "PVC" | "XLPE/EPR";
+  installationMethod: CableMethodCode;
+  ambientTemperatureC: number;
+  groupedCircuits: number;
+  groupingArrangement: GroupingArrangement;
+  thirdHarmonicPercent: number;
+  voltageDropLimitPercent: number;
+  voltageDrop: { systemType: CableVoltageDropSystemType; lengthM: number; baseVoltageV: number; cosPhi: number };
+  extraCorrectionFactor?: number;
+  detailed?: CableDetailedOptions;
+}
+export interface CableSelectOutput {
+  mode: CableSelectMode;
+  selectedSectionMm2: number;
+  designCurrentA: number;
+  sizingCurrentA: number;
+  kT: number; kG: number; kH: number; kS: number; kD: number; kTotal: number;
+  izRequiredA: number;
+  selectedDevice: SelectedDevice | null;
+  peSectionMm2: number | null;
+  neutralSectionMm2: number | null;
+  candidateTrace: readonly CandidateEvaluation[];
+  vdResult: CableResponse["value"]["vdResult"]; // reuse existing VD output type, do not duplicate
+}
+export interface CableSelectResponse {
+  value: CableSelectOutput;
+  warnings: readonly { code: string; messageKey: string; detail?: string }[];
+  assumptions: readonly AssumptionEntry[];
+  formulaVariant: string;
+  dataVersion: string;
+  engineVersion: string;
+}
+
 export type CableRulerAmbient = "toprak_20C" | "hava_30C";
 
 export interface CableRulerRequest {
@@ -612,6 +690,7 @@ export interface ElektroPlanBridge {
     voltageDrop(request: VoltageDropRequest): Promise<VoltageDropResponse>;
     voltageDropGroup(request: VoltageDropGroupRequest): Promise<VoltageDropGroupResponse>;
     cable(request: CableRequest): Promise<CableResponse>;
+    cableSelect(request: CableSelectRequest): Promise<CableSelectResponse>;
     cableRuler(request: CableRulerRequest): Promise<CableRulerResponse>;
     groupCableSuggest(groupTotalCurrentA: number): Promise<GroupCableSuggestionResult>;
     protection(request: ProtectionRequest): Promise<ProtectionResponse>;

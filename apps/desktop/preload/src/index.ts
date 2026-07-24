@@ -2,6 +2,8 @@ import {
   IPC_CHANNELS as CHANNELS,
   type CableRequest,
   type CableResponse,
+  type CableSelectRequest,
+  type CableSelectResponse,
   type CalculationGroup,
   type CalculationRecord,
   type IpcEnvelope,
@@ -146,6 +148,7 @@ export interface ElektroPlanBridge {
     voltageDrop(request: VoltageDropRequest): Promise<VoltageDropResponse>;
     voltageDropGroup(request: VoltageDropGroupRequest): Promise<VoltageDropGroupResponse>;
     cable(request: CableRequest): Promise<CableResponse>;
+    cableSelect(request: CableSelectRequest): Promise<CableSelectResponse>;
     cableRuler(request: CableRulerRequest): Promise<CableRulerResponse>;
     groupCableSuggest(groupTotalCurrentA: number): Promise<GroupCableSuggestionResult>;
     protection(request: ProtectionRequest): Promise<ProtectionResponse>;
@@ -215,6 +218,7 @@ const bridge: ElektroPlanBridge = {
     voltageDrop: (request) => invoke(CHANNELS.CalcVoltageDrop, request),
     voltageDropGroup: (request) => invoke(CHANNELS.CalcVoltageDropGroup, request),
     cable: (request) => invoke(CHANNELS.CalcCable, request),
+    cableSelect: (request) => invoke(CHANNELS.CalcCableSelect, request),
     cableRuler: (request) => invoke(CHANNELS.CalcCableRuler, request),
     groupCableSuggest: (groupTotalCurrentA) =>
       invoke(CHANNELS.CalcGroupCableSuggest, { groupTotalCurrentA }),
