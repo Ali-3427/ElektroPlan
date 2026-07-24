@@ -2,7 +2,7 @@
 
 Desktop app for electrical engineering calculations, built on IEC 60364-5-52.
 
-**Download:** [latest release (v1.8.0)](https://github.com/Ali-3427/ElektropPlan_V2/releases/tag/v1.8.0) — portable exe or Windows installer.
+**Download:** [latest release (v1.8.9)](https://github.com/Ali-3427/ElektropPlan_V2/releases/tag/v1.8.9) — portable exe or Windows installer.
 
 ## What it does
 
