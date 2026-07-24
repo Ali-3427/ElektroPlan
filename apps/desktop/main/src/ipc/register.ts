@@ -181,6 +181,12 @@ export function registerIpcHandlers(
   );
   secureHandle(
     ipcMain,
+    IPC_CHANNELS.CalcCableSelect,
+    securityOptions,
+    (_event, payload) => services.calculate.runCableSelect(payload),
+  );
+  secureHandle(
+    ipcMain,
     IPC_CHANNELS.CalcCableRuler,
     securityOptions,
     (_event, payload) => services.calculate.runCableRuler(payload),

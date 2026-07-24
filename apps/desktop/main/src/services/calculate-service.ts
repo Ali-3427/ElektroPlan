@@ -1,6 +1,7 @@
 import {
   calculateCableSizing,
   calculateMotorCurrent,
+  selectCable,
   selectCableSectionFromRuler,
   suggestGroupCableSections,
   calculateVoltageDrop,
@@ -9,6 +10,8 @@ import {
   ENGINE_VERSION,
 } from "@elektroplan/calculation-core";
 import type {
+  CableSelectionInput,
+  CableSelectionResult,
   CableSizingInput,
   MotorCurrentInput,
   MotorCurrentResult,
@@ -34,6 +37,7 @@ import {
 import {
   cableRequestSchema,
   cableRulerRequestSchema,
+  cableSelectRequestSchema,
   motorRequestSchema,
   protectionRequestSchema,
   voltageDropGroupRequestSchema,
@@ -41,6 +45,7 @@ import {
   type CableRequest,
   type CableRulerRequest,
   type CableRulerResponse,
+  type CableSelectRequest,
   type MotorRequest,
   type ProtectionRequest,
   type VoltageDropGroupRequest,
@@ -52,6 +57,7 @@ export interface CalculateService {
   runVoltageDrop(request: unknown): VoltageDropResult;
   runVoltageDropGroup(request: unknown): VoltageDropGroupResult;
   runCable(request: unknown): CableSizingResult;
+  runCableSelect(request: unknown): CableSelectionResult;
   runCableRuler(request: unknown): CableRulerResponse;
   runGroupCableSuggest(payload: unknown): GroupCableSuggestionResult;
   runProtection(request: unknown): readonly ProtectionDeviceCandidate[];
@@ -163,6 +169,10 @@ export function createCalculateService(): CalculateService {
     runCable(request: unknown): CableSizingResult {
       const parsed: CableRequest = cableRequestSchema.parse(request);
       return calculateCableSizing(toCableInput(parsed));
+    },
+    runCableSelect(request: unknown): CableSelectionResult {
+      const parsed: CableSelectRequest = cableSelectRequestSchema.parse(request);
+      return selectCable(stripUndefinedDeep(parsed) as CableSelectionInput);
     },
     runCableRuler(request: unknown): CableRulerResponse {
       const parsed: CableRulerRequest = cableRulerRequestSchema.parse(request);

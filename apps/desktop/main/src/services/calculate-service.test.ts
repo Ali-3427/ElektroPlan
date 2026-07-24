@@ -49,3 +49,43 @@ describe("CalculateService runGroupCableSuggest", () => {
     );
   });
 });
+
+describe("CalculateService runCableSelect", () => {
+  const base = {
+    mode: "standard",
+    designCurrentA: 60,
+    phase: 3,
+    circuitKind: "power",
+    conductorMaterial: "copper",
+    insulation: "XLPE/EPR",
+    installationMethod: "C",
+    ambientTemperatureC: 30,
+    groupedCircuits: 1,
+    groupingArrangement: "bunched",
+    thirdHarmonicPercent: 0,
+    voltageDropLimitPercent: 5,
+    voltageDrop: {
+      systemType: "three-phase-ac-ll",
+      lengthM: 25,
+      baseVoltageV: 400,
+      cosPhi: 0.9,
+    },
+  };
+
+  it("selects a cross-section for a valid standard request", () => {
+    const service = createCalculateService();
+
+    const result = service.runCableSelect(base);
+
+    assert.ok(result.value.selectedSectionMm2 > 0);
+    assert.equal(result.value.mode, "standard");
+  });
+
+  it("rejects an invalid installation method via the schema", () => {
+    const service = createCalculateService();
+
+    assert.throws(() =>
+      service.runCableSelect({ ...base, installationMethod: "E" }),
+    );
+  });
+});
