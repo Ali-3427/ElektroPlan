@@ -1,0 +1,137 @@
+.trace {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+
+.heading {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-subtle);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.candidate {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  border-left-width: 3px;
+  border-left-color: var(--color-border-strong);
+  background: var(--color-surface-alt);
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.candidate.rejected {
+  opacity: 0.7;
+}
+
+.candidate.selected {
+  opacity: 1;
+  border-left-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  box-shadow: var(--shadow-sm);
+}
+
+.candidateHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.sectionValue {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.selected .sectionValue {
+  color: var(--color-primary-hover);
+}
+
+.selectedBadge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-surface);
+  background: var(--color-primary);
+  padding: 2px var(--space-2);
+  border-radius: 999px;
+}
+
+.rejectedBadge {
+  font-size: 11px;
+  color: var(--color-text-subtle);
+}
+
+.badgeRow {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  padding: 3px var(--space-2);
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.badge[data-status="pass"] {
+  background: var(--color-success-soft);
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+.badge[data-status="fail"] {
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.badge[data-status="skipped"] {
+  background: var(--color-surface-alt);
+  border-color: var(--color-border);
+  color: var(--color-text-subtle);
+}
+
+.badge[data-status="not-applicable"] {
+  background: transparent;
+  border-style: dashed;
+  color: var(--color-text-subtle);
+  opacity: 0.65;
+}
+
+.failedAtBadge {
+  box-shadow: 0 0 0 2px var(--color-danger);
+}
+
+.badgeIcon {
+  font-size: 11px;
+  line-height: 1;
+}

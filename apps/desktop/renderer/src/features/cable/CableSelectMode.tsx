@@ -28,6 +28,7 @@ import {
   normalizeExampleNumber,
 } from "../shared/calculatorDefaults";
 import { usePersistentPageState } from "../shared/usePersistentPageState";
+import { CriterionTrace } from "./CriterionTrace";
 import styles from "./CableSelectMode.module.css";
 
 const PHASE_OPTIONS = [
@@ -796,7 +797,10 @@ export function CableSelectMode({ mode }: CableSelectModeProps) {
             )}
           </div>
 
-          {/* Task 6: <CriterionTrace trace={result.value.candidateTrace} /> renders here. */}
+          <CriterionTrace
+            trace={result.value.candidateTrace}
+            selectedSectionMm2={result.value.selectedSectionMm2}
+          />
         </ResultPanel>
       )}
     </div>
