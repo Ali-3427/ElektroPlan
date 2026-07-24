@@ -1,7 +1,8 @@
 # Kablo Hesap Motoru — UI Entegrasyon Planı
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax.
-> **UI görevlerinde (Task 5–7) ZORUNLU:** her UI bileşeni yazımından önce `Skill` aracıyla `frontend-design:frontend-design` skill'ini çağır ve onu takip et. Bu skill'i çağırmadan JSX/CSS yazma.
+> **HER TASK'ta ZORUNLU:** herhangi bir kod yazmadan önce `Skill` aracıyla `ponytail:ponytail` skill'ini çağır ve merdivenini uygula — en yalın çalışan çözümü seç, mevcut primitifi yeniden kullan, gereksiz soyutlama ekleme.
+> **UI görevlerinde (Task 5–7) EK ZORUNLU:** ponytail'den sonra, JSX/CSS yazımından önce `Skill` aracıyla `frontend-design:frontend-design` skill'ini de çağır ve onu takip et. Sıra: ponytail (ne kadar az kod) → frontend-design (o kodun estetiği). İkisini de çağırmadan yazma.
 
 **Goal:** Yeni `selectCable` motorunu (3 mod: Cetvel / Hesap / Detaylı) IPC zinciri üzerinden UI'a bağla; eski `cable/` motoruna bağlı "Detaylı Hesap" tab'ını emekliye ayır.
 
@@ -507,7 +508,7 @@ export function CablePage() {
 
 ### Task 5: Hesap + Detaylı form bileşeni `CableSelectMode`
 
-> **ZORUNLU İLK ADIM:** `Skill` aracıyla `frontend-design:frontend-design` skill'ini çağır. Mevcut tasarım sistemine (amber accent, `Card`/`Field`/`Select`/`NumberInput` primitifleri, `theme.css` token'ları, `data-theme` light/dark) **oturan** bir form tasarla — çakışan yeni estetik değil. Skill'i çağırmadan JSX/CSS yazma.
+> **ZORUNLU İLK ADIMLAR (sırayla):** (1) `Skill` aracıyla `ponytail:ponytail` çağır — `CableDetailedMode`'u referans al, mevcut `ui/*` primitiflerini ve form state kalıbını yeniden kullan, yeni soyutlama ekleme. (2) `Skill` aracıyla `frontend-design:frontend-design` çağır — mevcut tasarım sistemine (amber accent, `Card`/`Field`/`Select`/`NumberInput`, `theme.css` token'ları, `data-theme` light/dark) **oturan** bir form tasarla, çakışan yeni estetik değil. İkisini de çağırmadan JSX/CSS yazma.
 
 **Files:**
 - Create: `apps/desktop/renderer/src/features/cable/CableSelectMode.tsx`
@@ -523,7 +524,7 @@ export function CablePage() {
 - **Detaylı modda açılan gelişmiş bölüm** (`mode === "detailed"`): topraklama sistemi (TN/TT), devre rolü (final/dağıtım), kesici eğrisi (B/C/D), PE konumu, iletken dizilimi, paralel iletken, toprak termal direnci (yalnız D1/D2), gömme derinliği, kısa devre (Isc/t), Zs yöntemi (estimated/calculated/measured — yönteme göre ek alan).
 - Gelişmiş bölüm görsel olarak **ayrı bir katman** (`<Card>` içinde başlık + ince ayraç), "uzman ayarları" hissi versin — ama form akışını bozmadan.
 
-- [ ] **Step 1: `Skill(frontend-design:frontend-design)` çağır**, tasarım yönünü netleştir, sonra devam et.
+- [ ] **Step 1: `Skill(ponytail:ponytail)` → `Skill(frontend-design:frontend-design)` çağır** (bu sırayla), tasarım yönünü netleştir, sonra devam et.
 
 - [ ] **Step 2: Failing test** (mantık — form → istek eşlemesi; render smoke)
 
@@ -606,7 +607,7 @@ git commit -m "feat(ui): add 3-mode cable page with standard/detailed select for
 
 ### Task 6: Kriter-trace görselleştirme `CriterionTrace`
 
-> **ZORUNLU İLK ADIM:** `Skill` aracıyla `frontend-design:frontend-design` skill'ini çağır. Bu bileşen sayfanın **akılda kalan öğesi** — "neden bu kesit, komşular neden elendi" sorusunu tek bakışta cevaplamalı. Görsel olarak güçlü ama okunur; tema token'larıyla, light/dark uyumlu. Skill'i çağırmadan yazma.
+> **ZORUNLU İLK ADIMLAR (sırayla):** (1) `Skill` aracıyla `ponytail:ponytail` çağır — trace bir liste + rozet dizisi, en yalın haliyle çöz; ağır grafik kütüphanesi/soyutlama ekleme, CSS ile hallet. (2) `Skill` aracıyla `frontend-design:frontend-design` çağır — bu bileşen sayfanın **akılda kalan öğesi**, "neden bu kesit, komşular neden elendi" sorusunu tek bakışta cevaplamalı; görsel güçlü ama okunur, tema token'larıyla light/dark uyumlu. İkisini de çağırmadan yazma.
 
 **Files:**
 - Create: `apps/desktop/renderer/src/features/cable/CriterionTrace.tsx`
@@ -619,7 +620,7 @@ git commit -m "feat(ui): add 3-mode cable page with standard/detailed select for
 
 **Tasarım yönü:** her aday kesit bir satır/kart. Kriterler yatay sıralı rozet dizisi (`pass` yeşil ✓ / `fail` kırmızı ✕ / `skipped` gri ⊘ / `not-applicable` soluk —). Elenen adayda `failedAt` kriteri vurgulu. Seçilen kesit belirgin (accent kenarlık/işaret). Uzun trace kaydırılabilir (`overflow-x` kendi kabında; sayfa yatay kaymaz).
 
-- [ ] **Step 1: `Skill(frontend-design:frontend-design)` çağır**, sonra devam.
+- [ ] **Step 1: `Skill(ponytail:ponytail)` → `Skill(frontend-design:frontend-design)` çağır** (bu sırayla), sonra devam.
 
 - [ ] **Step 2: Failing test**
 
@@ -730,14 +731,15 @@ git commit -m "chore(ui): retire legacy CableDetailedMode in favor of cable-sele
 ## Coding Agent Talimatları
 
 1. **Zincir sırayla:** Bölüm 1 (contracts → main → preload/bridge) tam bitmeden Bölüm 2'ye geçme; renderer tipleri bridge'e bağlı.
-2. **frontend-design ZORUNLU:** Task 5 ve Task 6'da, JSX/CSS yazmadan **önce** `Skill` aracıyla `frontend-design:frontend-design` çağır ve takip et. Bu bir öneri değil, adım.
-3. **Mevcut tasarım sistemine otur:** amber accent, `theme.css` token'ları, `ui/*` primitifleri yeniden kullanılır. Yeni renk paleti/font sistemi icat etme — frontend-design'ı *bu bağlama* uygula.
-4. **TDD:** her task failing test → fail gör → implement → pass → commit. UI bileşenlerinde smoke + mantık testi yeter (form→istek eşlemesi, trace durum kancaları).
-5. **`.js` uzantısı** core/contracts/main/preload importlarında; renderer'da bundler'a göre (mevcut dosyalardaki kalıbı izle).
-6. **Cetvel modu kutsal:** `CableRulerMode` ve `calc:cable-ruler` değişmez; her Bölüm sonunda regresyon.
-7. **Tip kaynağı contracts:** preload ve main tipleri `@elektroplan/contracts`'tan alır; renderer çıktı tipleri `bridge/types.ts`'te (core'u kopyalamadan aynala).
-8. **Task 4 tek başına derlenmez** (Task 5'in `CableSelectMode`'una bağlı) — ikisini birlikte commit'le.
-9. **Silme dikkatli (Task 7):** önce grep, referans yoksa sil. Core `cable/` modülüne ve `calc:cable` kanalına dokunma.
-10. **Son adım gerçek uygulama:** Task 7 Step 5'te uygulamayı aç ve gözle doğrula — testler yeşil demek UI çalışıyor demek değil.
-11. **Belirsizlik varsa dur, sor.** Özellikle: `installationMethods()` query'sinin D1/D2 döndürüp döndürmediği (Task 5) ve `vdResult` tipinin bridge'de mevcut olup olmadığı (Task 3).
+2. **ponytail ZORUNLU (her task):** kod yazmadan **önce** `Skill` aracıyla `ponytail:ponytail` çağır. Merdiven: gerekli mi → mevcut primitif/util var mı → stdlib/native → tek satır → ancak sonra minimum kod. Yeni bileşen/soyutlama eklemeden önce `ui/*` ve mevcut feature'ları kontrol et.
+3. **frontend-design ZORUNLU (Task 5–6):** ponytail'den sonra, JSX/CSS yazmadan **önce** `Skill` aracıyla `frontend-design:frontend-design` çağır ve takip et. Sıra: ponytail → frontend-design. İkisi de öneri değil, adım.
+4. **Mevcut tasarım sistemine otur:** amber accent, `theme.css` token'ları, `ui/*` primitifleri yeniden kullanılır. Yeni renk paleti/font sistemi icat etme — frontend-design'ı *bu bağlama* uygula.
+5. **TDD:** her task failing test → fail gör → implement → pass → commit. UI bileşenlerinde smoke + mantık testi yeter (form→istek eşlemesi, trace durum kancaları).
+6. **`.js` uzantısı** core/contracts/main/preload importlarında; renderer'da bundler'a göre (mevcut dosyalardaki kalıbı izle).
+7. **Cetvel modu kutsal:** `CableRulerMode` ve `calc:cable-ruler` değişmez; her Bölüm sonunda regresyon.
+8. **Tip kaynağı contracts:** preload ve main tipleri `@elektroplan/contracts`'tan alır; renderer çıktı tipleri `bridge/types.ts`'te (core'u kopyalamadan aynala).
+9. **Task 4 tek başına derlenmez** (Task 5'in `CableSelectMode`'una bağlı) — ikisini birlikte commit'le.
+10. **Silme dikkatli (Task 7):** önce grep, referans yoksa sil. Core `cable/` modülüne ve `calc:cable` kanalına dokunma.
+11. **Son adım gerçek uygulama:** Task 7 Step 5'te uygulamayı aç ve gözle doğrula — testler yeşil demek UI çalışıyor demek değil.
+12. **Belirsizlik varsa dur, sor.** Özellikle: `installationMethods()` query'sinin D1/D2 döndürüp döndürmediği (Task 5) ve `vdResult` tipinin bridge'de mevcut olup olmadığı (Task 3).
 ```
