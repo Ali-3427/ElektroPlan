@@ -1,4 +1,65 @@
-// Local re-declarations — do NOT import from @elektroplan/contracts at runtime.
+// Renderer-local declarations, plus type-only re-exports of the canonical shapes from
+// @elektroplan/contracts (see below). `import type` is fully erased by tsc/vite, so it does
+// NOT pull zod into the renderer runtime bundle — do NOT add a runtime `import` from
+// @elektroplan/contracts in this file.
+
+import type {
+  CableOutput,
+  CableRequest,
+  CableResponse,
+  CableRulerAmbient,
+  CableRulerEntryDto,
+  CableRulerOutput,
+  CableRulerRequest,
+  CableSelectRequest,
+  CalculationGroup,
+  GroupingMetadata,
+  InstallationMethod,
+  ManualCurrentRequest,
+  ManualCurrentResponse,
+  MaterialCategory,
+  MotorOutput,
+  MotorRequest,
+  MotorSuggestedCableSection,
+  ProtectionRequest,
+  RecordVersion,
+  VoltageDropGroupOptimizationStep,
+  VoltageDropGroupPhaseMode,
+  VoltageDropGroupRequest,
+  VoltageDropGroupSystemType,
+  VoltageDropOutput,
+  VoltageDropRequest,
+  VoltageDropResponse,
+} from "@elektroplan/contracts";
+
+export type {
+  CableOutput,
+  CableRequest,
+  CableResponse,
+  CableRulerAmbient,
+  CableRulerEntryDto,
+  CableRulerOutput,
+  CableRulerRequest,
+  CableSelectRequest,
+  CalculationGroup,
+  GroupingMetadata,
+  InstallationMethod,
+  ManualCurrentRequest,
+  ManualCurrentResponse,
+  MaterialCategory,
+  MotorOutput,
+  MotorRequest,
+  MotorSuggestedCableSection,
+  ProtectionRequest,
+  RecordVersion,
+  VoltageDropGroupOptimizationStep,
+  VoltageDropGroupPhaseMode,
+  VoltageDropGroupRequest,
+  VoltageDropGroupSystemType,
+  VoltageDropOutput,
+  VoltageDropRequest,
+  VoltageDropResponse,
+};
 
 export interface SettingRecord {
   readonly key: string;
@@ -61,8 +122,6 @@ export interface MotorTableRequest {
   voltage: 220 | 380;
 }
 
-export type MotorRequest = MotorFormulaRequest | MotorTableRequest;
-
 export interface MotorFormulaOutput {
   mode: "formula";
   phase: MotorPhase;
@@ -87,8 +146,13 @@ export interface MotorTableOutput {
   cableSpec: string;
 }
 
-export type MotorOutput = MotorFormulaOutput | MotorTableOutput;
-
+// NOTE: MotorResponse is intentionally NOT re-exported from @elektroplan/contracts, even
+// though its field shape matches. Its `warnings`/`assumptions` arrays embed contracts' zod-
+// inferred WarningEntryDto/AssumptionEntryDto, whose optional `detail`/fields are typed as
+// `T | undefined` (zod always adds this explicitly). Under this project's
+// `exactOptionalPropertyTypes: true`, that is NOT assignable to this file's local WarningEntry/
+// AssumptionEntry (`detail?: string`, no explicit undefined) — confirmed by a real tsc failure
+// in FormulaMode.tsx / TableMode.tsx when this was swapped. Leave local until reconciled.
 export interface MotorResponse {
   value: MotorOutput;
   warnings: WarningEntry[];
@@ -137,41 +201,7 @@ export interface VoltageDropPowerRequest {
   reactanceOhmPerKm?: number;
 }
 
-export type VoltageDropRequest = VoltageDropCurrentRequest | VoltageDropPowerRequest;
-
-export interface VoltageDropOutput {
-  mode: "current" | "power";
-  systemType: VoltageDropSystemType;
-  impedanceMode: VoltageDropImpedanceMode;
-  conductorMaterial: "copper" | "aluminum";
-  lengthM: number;
-  sectionMm2: number;
-  baseVoltageV: number;
-  currentA: number;
-  cosPhi?: number;
-  sinPhi?: number;
-  parallelConductors: number;
-  conductorTempC?: number;
-  resistance20OhmPerKm: number;
-  resistanceOhmPerKm: number;
-  reactanceOhmPerKm: number;
-  deltaVVolts: number;
-  deltaVPercent: number;
-}
-
-export interface VoltageDropResponse {
-  value: VoltageDropOutput;
-  warnings: WarningEntry[];
-  assumptions: AssumptionEntry[];
-  formulaVariant: string;
-  dataVersion: string;
-  engineVersion: string;
-}
-
 // ── Voltage Drop Group ────────────────────────────────────────────────────────
-export type VoltageDropGroupPhaseMode = "auto" | "single-phase" | "three-phase";
-export type VoltageDropGroupSystemType = "single-phase-ac-two-conductor" | "three-phase-ac-ll";
-
 export interface VoltageDropGroupSegmentInput {
   readonly id?: string;
   readonly parentId?: string | null;
@@ -208,12 +238,18 @@ export type VoltageDropGroupSegmentSettings = Omit<
   "limitPercent" | "phaseMode" | "singlePhaseVoltageV" | "threePhaseVoltageV"
 >;
 
-export interface VoltageDropGroupRequest {
-  readonly title?: string;
-  readonly segments: readonly VoltageDropGroupSegmentInput[];
-  readonly settings?: VoltageDropGroupSettings;
-}
-
+// NOTE: VoltageDropGroupResolvedSettings, VoltageDropGroupSegmentOutput, VoltageDropGroupOutput,
+// and VoltageDropGroupResponse are intentionally NOT re-exported from @elektroplan/contracts,
+// even though their field shapes match. Real drifts surface once ElektroPlanBridge (which uses
+// these) gets intersected with the parallel local type family in
+// features/voltageDrop/voltageDropGroup.ts (which also extends ElektroPlanBridge but declares
+// its own hand-rolled VoltageDropGroup* types): (1) contracts' zod-inferred optional fields
+// (e.g. `reactanceOhmPerKm?: number | undefined`, `title?: string | undefined`) are not
+// assignable to this project's hand-rolled `field?: T` (no explicit undefined) under
+// `exactOptionalPropertyTypes: true`, and (2) contracts' `childIds` infers as mutable
+// `string[]`, which is not assignable to the local `readonly string[]`. Confirmed by real tsc
+// failures in VoltageDropPage.tsx when these were swapped. Leave local until reconciled (either
+// the contracts schema or the local voltageDropGroup.ts type family would need to change first).
 export interface VoltageDropGroupResolvedSettings {
   readonly limitPercent: number;
   readonly phaseMode: VoltageDropGroupPhaseMode;
@@ -267,17 +303,6 @@ export interface VoltageDropGroupSegmentOutput {
   readonly compliant: boolean;
 }
 
-export interface VoltageDropGroupOptimizationStep {
-  readonly iteration: number;
-  readonly segmentOrder: number;
-  readonly segmentTitle: string;
-  readonly fromSectionMm2: number;
-  readonly toSectionMm2: number;
-  readonly previousMaxCumulativeDeltaVPercent: number;
-  readonly nextMaxCumulativeDeltaVPercent: number;
-  readonly sensitivityIndex: number;
-}
-
 export interface VoltageDropGroupOutput {
   readonly title?: string;
   readonly settings: VoltageDropGroupResolvedSettings;
@@ -303,8 +328,6 @@ export type CableVoltageDropSystemType =
   | "three-phase-ac-ll"
   | "three-phase-ac-ln";
 
-export type InstallationMethod = "A1" | "A2" | "B1" | "B2" | "C" | "D" | "E";
-
 export interface CableVoltageDropRequest {
   mode: "current";
   systemType: CableVoltageDropSystemType;
@@ -317,20 +340,6 @@ export interface CableVoltageDropRequest {
   cosPhi?: number;
 }
 
-export interface CableRequest {
-  designCurrentA: number;
-  phase: 1 | 3;
-  conductorMaterial: "copper" | "aluminum";
-  installationMethod: InstallationMethod;
-  insulationRating: "XLPE/EPR";
-  ambientTemperatureC: number;
-  groupedCircuits: number;
-  thirdHarmonicPercent: number;
-  voltageDropLimitPercent: number;
-  voltageDrop: CableVoltageDropRequest;
-  extraCorrectionFactor?: number;
-}
-
 export interface CandidateStep {
   sectionMm2: number;
   baseAmpacityA: number | null;
@@ -339,40 +348,6 @@ export interface CandidateStep {
   vdPass: boolean;
   accepted: boolean;
   vdResult: VoltageDropResponse;
-}
-
-export interface CableOutput {
-  selectedSectionMm2: number;
-  baseAmpacityA: number;
-  correctedAmpacityA: number;
-  designCurrentA: number;
-  sizingCurrentA: number;
-  loadedConductors: number;
-  harmonicSizingBasis: "design-current" | "neutral-current";
-  kT: number;
-  kG: number;
-  kH: number;
-  kTotal: number;
-  izRequiredA: number;
-  voltageDropLimitPercent: number;
-  preliminaryEstimate: {
-    kind: "preliminary-j-hint";
-    referenceCurrentA: number;
-    currentDensityAperMm2: number;
-    correctionFactorProduct: number;
-    estimatedSectionMm2: number;
-  };
-  vdResult: VoltageDropResponse;
-  candidateTrace: CandidateStep[];
-}
-
-export interface CableResponse {
-  value: CableOutput;
-  warnings: WarningEntry[];
-  assumptions: AssumptionEntry[];
-  formulaVariant: string;
-  dataVersion: string;
-  engineVersion: string;
 }
 
 // ── Cable Select ──────────────────────────────────────────────────────────────
@@ -414,23 +389,6 @@ export interface CableDetailedOptions {
     | { method: "calculated"; prospectiveEarthFaultKa: number }
     | { method: "measured"; sourceImpedanceOhm: number };
 }
-export interface CableSelectRequest {
-  mode: CableSelectMode;
-  designCurrentA: number;
-  phase: 1 | 3;
-  circuitKind: "power" | "signal";
-  conductorMaterial: "copper" | "aluminum";
-  insulation: "PVC" | "XLPE/EPR";
-  installationMethod: CableMethodCode;
-  ambientTemperatureC: number;
-  groupedCircuits: number;
-  groupingArrangement: GroupingArrangement;
-  thirdHarmonicPercent: number;
-  voltageDropLimitPercent: number;
-  voltageDrop: { systemType: CableVoltageDropSystemType; lengthM: number; baseVoltageV: number; cosPhi: number };
-  extraCorrectionFactor?: number;
-  detailed?: CableDetailedOptions;
-}
 export interface CableSelectOutput {
   mode: CableSelectMode;
   selectedSectionMm2: number;
@@ -444,6 +402,12 @@ export interface CableSelectOutput {
   candidateTrace: readonly CandidateEvaluation[];
   vdResult: CableResponse["value"]["vdResult"]; // reuse existing VD output type, do not duplicate
 }
+// NOTE: CableSelectResponse is intentionally NOT re-exported from @elektroplan/contracts.
+// The contracts version (packages/contracts/src/schemas.ts cableSelectResponseSchema) has
+// drifted to a loosely-typed `value: Record<string, unknown>` / `warnings: unknown[]` /
+// `assumptions: unknown[]` shape, while this bridge type keeps the precise CableSelectOutput /
+// structured warnings / AssumptionEntry[] shape that renderer code relies on. Do not swap this
+// one without first tightening the contracts schema to match.
 export interface CableSelectResponse {
   value: CableSelectOutput;
   warnings: readonly { code: string; messageKey: string; detail?: string }[];
@@ -453,32 +417,8 @@ export interface CableSelectResponse {
   engineVersion: string;
 }
 
-export type CableRulerAmbient = "toprak_20C" | "hava_30C";
-
-export interface CableRulerRequest {
-  designCurrentA: number;
-  ambient: CableRulerAmbient;
-}
-
-export interface CableRulerEntryDto {
-  nominal_kesit_mm2: string;
-  sectionMm2: number;
-  dis_cap_mm: number;
-  net_agirlik_kg_km: number;
-  sevk_uzunlugu_m: number;
-  dc_direnc_ohm_km_20C: number;
-  akim_toprak_20C_A: number | null;
-  akim_hava_30C_A: number | null;
-}
-
-export interface CableRulerOutput {
-  mode: "ruler";
-  designCurrentA: number;
-  ambient: CableRulerAmbient;
-  selected: CableRulerEntryDto;
-  selectedAmpacityA: number;
-}
-
+// NOTE: CableRulerResponse is deliberately NOT in the dedupe list (not part of the 37
+// verified-compatible names) — keep this local declaration as-is.
 export interface CableRulerResponse {
   value: CableRulerOutput;
   warnings: WarningEntry[];
@@ -501,35 +441,11 @@ export interface GroupCableSuggestionResult {
   hava_30C: GroupCableSuggestionEntry | null;
 }
 
-export interface MotorSuggestedCableSection {
-  sectionMm2: number;
-  label: string;
-  ambient: CableRulerAmbient;
-  ampacityA: number;
-  standardHintMm2?: 2.5 | 4;
-}
-
-// ── Manual Current ────────────────────────────────────────────────────────────
-export interface ManualCurrentRequest {
-  currentA: number;
-  label?: string;
-}
-
-export interface ManualCurrentResponse {
-  value: { currentA: number };
-}
-
 // ── Protection ────────────────────────────────────────────────────────────────
-export interface ProtectionRequest {
-  minimumNominalCurrentA: number;
-  families?: ("MCB" | "MCCB" | "RCD" | "RCBO")[];
-  poles?: number;
-  voltageV?: number;
-  curve?: "B" | "C" | "D";
-  residualCurrentMa?: number;
-  limit?: number;
-}
-
+// NOTE: ProtectionResponse is intentionally NOT re-exported from @elektroplan/contracts.
+// The contracts version is a structured `ProtectionCandidate[]`, while this bridge type is a
+// loose `unknown[]` — a real shape drift, not just a naming difference. Swapping would change
+// what call sites are allowed to assume about array elements. Leave local until reconciled.
 export type ProtectionResponse = unknown[];
 
 // ── Records / Groups ──────────────────────────────────────────────────────────
@@ -540,21 +456,6 @@ export type CalculatorKind =
   | "cable"
   | "protection"
   | "manual-current";
-
-export interface RecordVersion {
-  contractVersion: string;
-  engineVersion?: string;
-  dataVersion?: string;
-}
-
-export interface GroupingMetadata {
-  groupId?: string;
-  groupPath?: string[];
-  groupTitle?: string;
-  order?: number;
-  quantity?: number;
-  tags?: string[];
-}
 
 export interface MotorCalculationRecord {
   id: string;
@@ -616,6 +517,15 @@ export interface ManualCurrentCalculationRecord {
   output: ManualCurrentResponse;
 }
 
+// NOTE: CalculationRecord is intentionally NOT re-exported from @elektroplan/contracts, even
+// though its per-calculator shapes match. Contracts builds its union from its own
+// recordBaseSchema, whose `title` field infers to `string | undefined` (zod always adds this
+// explicitly for `.optional()`); this file's per-calculator *CalculationRecord interfaces above
+// declare `title?: string` (no explicit undefined). Under `exactOptionalPropertyTypes: true`
+// these are NOT interchangeable — confirmed by real tsc failures in RecordDetail.tsx and
+// VoltageDropPage.tsx when this was swapped (code narrows the contracts union and passes the
+// result into functions typed against the local per-calculator record interfaces). Leave local
+// until reconciled.
 export type CalculationRecord =
   | MotorCalculationRecord
   | VoltageDropCalculationRecord
@@ -623,15 +533,6 @@ export type CalculationRecord =
   | CableCalculationRecord
   | ProtectionCalculationRecord
   | ManualCurrentCalculationRecord;
-
-export interface CalculationGroup {
-  id: string;
-  title: string;
-  parentGroupId?: string;
-  order?: number;
-  tags?: string[];
-  version: RecordVersion;
-}
 
 export const PROJECT_MARKER_TAG = "project" as const;
 
@@ -655,9 +556,13 @@ export interface MotorTableEntryDto {
 }
 
 // ── Materials / Assignments ───────────────────────────────────────────────────
-export interface MaterialCategory {
-  id: string; title: string; orderValue?: number; iconKey?: string;
-}
+// NOTE: Material and MaterialAssignment are intentionally NOT re-exported from
+// @elektroplan/contracts. The contracts versions narrow `unit` from `string` to the
+// `MaterialUnit` enum ("adet" | "m" | "kg" | "set" | "paket") and narrow
+// `attributes`/`snapshotAttributes` from `Record<string, unknown>` to a specific primitive
+// union — a real type drift, not just a naming difference. Swapping would break any renderer
+// code assigning a plain string/unknown value into those fields. Leave local until reconciled.
+// (MaterialCategory itself IS re-exported above — its shape matches exactly.)
 
 export interface Material {
   id: string; categoryId: string; name: string; orderValue?: number;

@@ -111,6 +111,9 @@ importers:
         specifier: ^6.26.0
         version: 6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
+      '@elektroplan/contracts':
+        specifier: workspace:*
+        version: link:../../../packages/contracts
       '@testing-library/jest-dom':
         specifier: ^6.4.0
         version: 6.9.1
