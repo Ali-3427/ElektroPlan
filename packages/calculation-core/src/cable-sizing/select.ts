@@ -55,6 +55,15 @@ export function selectCable(input: CableSelectionInput): CableSelectionResult {
       failedAt: evaluation.failedAt, accepted: evaluation.accepted,
     });
     if (evaluation.accepted && evaluation.vdResult !== null) {
+      for (const outcome of evaluation.criteria) {
+        if (outcome.status === "not-applicable") {
+          warnings.push({
+            code: "criterion-not-verified",
+            messageKey: "cable.criterion.notApplicable",
+            detail: `${outcome.id}:${String(outcome.detail.reason ?? "")}`,
+          });
+        }
+      }
       return {
         value: {
           mode: input.mode,
