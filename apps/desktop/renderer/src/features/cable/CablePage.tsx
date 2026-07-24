@@ -38,7 +38,7 @@ export function CablePage() {
           </button>
         ))}
       </div>
-      {mode === "ruler" ? <CableRulerMode /> : <CableSelectMode mode={mode} />}
+      {mode === "ruler" ? <CableRulerMode /> : <CableSelectMode key={mode} mode={mode} />}
     </div>
   );
 }
