@@ -32,7 +32,6 @@ export function NumberInput({
     if (parsed !== value) {
       setText(value === null ? "" : formatNumberTr(value));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   return (

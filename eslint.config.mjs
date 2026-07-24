@@ -25,6 +25,11 @@ export default [
       "@typescript-eslint": tsPlugin
     },
     rules: {
+      // TypeScript supersedes these core rules: tsc already flags undefined
+      // names, and the TS-aware unused-vars rule understands type-signature
+      // params and the ^_ ignore convention that the base rule does not.
+      "no-undef": "off",
+      "no-unused-vars": "off",
       "@typescript-eslint/consistent-type-imports": "error",
       "@typescript-eslint/no-unused-vars": [
         "error",

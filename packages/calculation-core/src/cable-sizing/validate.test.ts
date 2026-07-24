@@ -22,7 +22,7 @@ describe("detailed mode validation", () => {
   });
 
   it("rejects detailed mode without the detailed block", () => {
-    const { detailed, ...rest } = detailedInput();
+    const { detailed: _detailed, ...rest } = detailedInput();
     expect(() => validateSelectionInput(rest as CableSelectionInput))
       .toThrow("detailed mode requires the 'detailed' options block.");
   });
@@ -44,7 +44,7 @@ describe("detailed mode validation", () => {
   });
 
   it("still accepts standard mode without the detailed block (regression)", () => {
-    const { detailed, ...rest } = detailedInput();
+    const { detailed: _detailed, ...rest } = detailedInput();
     const input: CableSelectionInput = { ...rest, mode: "standard" as const };
     expect(() => validateSelectionInput(input)).not.toThrow();
   });

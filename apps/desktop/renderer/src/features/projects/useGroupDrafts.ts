@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useProjectMutations } from "./projectMutations";
+import type { useProjectMutations } from "./projectMutations";
 import type { ProjectGroupView, ProjectView } from "./useProjectsData";
 
 export interface ManualCurrentDraft {

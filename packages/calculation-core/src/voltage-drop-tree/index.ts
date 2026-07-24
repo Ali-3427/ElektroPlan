@@ -11,7 +11,6 @@ import type {
   VoltageDropTreeInput,
   VoltageDropTreeOutput,
   VoltageDropTreeResolvedSettings,
-  VoltageDropTreeSegmentInput,
   VoltageDropTreeSettingsInput,
 } from "./types.js";
 

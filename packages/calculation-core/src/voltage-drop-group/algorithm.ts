@@ -214,7 +214,7 @@ export function calculateVoltageDropGroup(input: VoltageDropGroupInput): Voltage
   const totalLocalPowerKW = compatSegments.reduce((sum, segment) => {
     return sum + (segment.loadPowerKW ?? segment.localPowerKW ?? 0);
   }, 0);
-  const settings = resolveVoltageDropGroupSettings(input.settings, totalLocalPowerKW);
+  const settings = resolveVoltageDropGroupSettings(input.settings);
   validateVoltageDropGroupInput(compatSegments, settings);
 
   const normalizedTreeSegments = normalizeGroupSegmentsToTree(compatSegments, settings);

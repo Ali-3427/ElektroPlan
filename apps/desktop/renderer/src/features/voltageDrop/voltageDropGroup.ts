@@ -386,7 +386,7 @@ export function buildVoltageDropGroupSubmission(state: {
   }
 
   const requestSegments: VoltageDropGroupRequestSegment[] = [];
-  for (const [index, segment] of segments.entries()) {
+  for (const segment of segments) {
     const resolvedLoadPowerKW = segment.loadPowerKW ?? segment.localPowerKW;
 
     if (!segment.id) {

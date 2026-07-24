@@ -22,7 +22,6 @@ export const DEFAULT_VOLTAGE_DROP_GROUP_SETTINGS = {
 
 export function resolveVoltageDropGroupSettings(
   settings: VoltageDropGroupSettingsInput | undefined,
-  totalLocalPowerKW: number,
 ): VoltageDropGroupResolvedSettings {
   const merged = {
     ...DEFAULT_VOLTAGE_DROP_GROUP_SETTINGS,
