@@ -51,3 +51,66 @@ describe("selectCable (standard mode)", () => {
     expect(() => selectCable({ ...base(), designCurrentA: 100000 })).toThrow();
   });
 });
+
+function detailed(over: Partial<CableSelectionInput> = {}): CableSelectionInput {
+  return {
+    mode: "detailed", designCurrentA: 60, phase: 3, circuitKind: "power",
+    conductorMaterial: "copper", insulation: "XLPE/EPR", installationMethod: "C",
+    ambientTemperatureC: 30, groupedCircuits: 1, groupingArrangement: "bunched",
+    thirdHarmonicPercent: 0, voltageDropLimitPercent: 5,
+    voltageDrop: { systemType: "three-phase-ac-ll", lengthM: 25, baseVoltageV: 400, cosPhi: 0.9 },
+    detailed: {
+      earthingSystem: "TN", circuitRole: "final", breakerCurve: "C",
+      peLocation: "in-cable", conductorArrangement: "multicore",
+      loopImpedance: { method: "estimated" },
+      shortCircuit: { prospectiveFaultKa: 6, clearingTimeS: 0.1 },
+    },
+    ...over,
+  };
+}
+
+/** Same input as `detailed()`, but stripped down to standard mode (no `detailed` block). */
+function toStandardMode(input: CableSelectionInput): CableSelectionInput {
+  const copy = { ...input, mode: "standard" as const };
+  delete copy.detailed;
+  return copy;
+}
+
+describe("selectCable (detailed mode)", () => {
+  it("returns device, PE and neutral sections", () => {
+    const r = selectCable(detailed());
+    expect(r.value.selectedDevice).not.toBeNull();
+    expect(r.value.peSectionMm2).not.toBeNull();
+    expect(r.value.neutralSectionMm2).not.toBeNull();
+    expect(r.formulaVariant).toBe("cable-sizing-detailed-ascending-scan");
+  });
+
+  it("never selects a smaller section than standard mode for the same load", () => {
+    const std = selectCable(toStandardMode(detailed()));
+    const det = selectCable(detailed());
+    expect(det.value.selectedSectionMm2).toBeGreaterThanOrEqual(std.value.selectedSectionMm2);
+  });
+
+  it("upsizes when a long run breaches the loop impedance limit", () => {
+    const short = selectCable(detailed());
+    const long = selectCable(detailed({
+      voltageDrop: { systemType: "three-phase-ac-ll", lengthM: 400, baseVoltageV: 400, cosPhi: 0.9 },
+      voltageDropLimitPercent: 100,
+    }));
+    expect(long.value.selectedSectionMm2).toBeGreaterThan(short.value.selectedSectionMm2);
+  });
+
+  it("records the criterion that rejected each smaller candidate", () => {
+    const r = selectCable(detailed());
+    const rejected = r.value.candidateTrace.filter((c) => !c.accepted);
+    expect(rejected.length).toBeGreaterThan(0);
+    expect(rejected.every((c) => c.failedAt !== null || c.criteria.some((x) => x.status === "skipped"))).toBe(true);
+  });
+
+  it("keeps standard mode output shape unchanged (regression)", () => {
+    const r = selectCable(toStandardMode(detailed()));
+    expect(r.value.selectedDevice).toBeNull();
+    expect(r.value.kS).toBe(1);
+    expect(r.value.kD).toBe(1);
+  });
+});
