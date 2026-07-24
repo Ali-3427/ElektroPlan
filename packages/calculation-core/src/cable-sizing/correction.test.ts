@@ -29,3 +29,45 @@ describe("validateSelectionInput", () => {
     expect(() => validateSelectionInput({ ...base(), designCurrentA: 0 })).toThrow();
   });
 });
+
+function buried(over: Partial<CableSelectionInput> = {}): CableSelectionInput {
+  return {
+    mode: "detailed", designCurrentA: 60, phase: 3, circuitKind: "power",
+    conductorMaterial: "copper", insulation: "XLPE/EPR", installationMethod: "D1",
+    ambientTemperatureC: 20, groupedCircuits: 1, groupingArrangement: "buried-in-ducts",
+    thirdHarmonicPercent: 0, voltageDropLimitPercent: 5,
+    voltageDrop: { systemType: "three-phase-ac-ll", lengthM: 25, baseVoltageV: 400, cosPhi: 0.9 },
+    detailed: {
+      earthingSystem: "TN", circuitRole: "final", breakerCurve: "C",
+      peLocation: "in-cable", conductorArrangement: "multicore",
+      loopImpedance: { method: "estimated" },
+      soilThermalResistivityKmPerW: 1.0,
+    },
+    ...over,
+  };
+}
+
+describe("computeCorrection with kS/kD", () => {
+  it("applies the soil resistivity factor on buried methods", () => {
+    const input = buried();
+    // buried-in-ducts kG at 1 circuit is not tabulated; use 2 circuits
+    const r = computeCorrection({ ...input, groupedCircuits: 2 }, 1);
+    expect(r.kS).toBe(1.18);
+    expect(r.kTotal).toBeCloseTo(r.kT * r.kG * r.kH * r.kS * r.kD, 9);
+  });
+
+  it("keeps kS = 1 on non-buried methods", () => {
+    const r = computeCorrection({ ...buried(), installationMethod: "C", groupingArrangement: "bunched" }, 1);
+    expect(r.kS).toBe(1);
+  });
+
+  it("always returns kD = 1 and records an assumption when a depth is given", () => {
+    const input = buried();
+    const r = computeCorrection({
+      ...input, groupedCircuits: 2,
+      detailed: { ...input.detailed!, burialDepthM: 1.5 },
+    }, 1);
+    expect(r.kD).toBe(1);
+    expect(r.assumptions.some((a) => a.field === "kD" && a.source === "estimated")).toBe(true);
+  });
+});
