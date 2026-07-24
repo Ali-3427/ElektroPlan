@@ -435,6 +435,72 @@ export const cableRulerOutputSchema = z
 export const cableRulerResponseSchema =
   createCalculationResultSchema(cableRulerOutputSchema);
 
+export const cableSelectVoltageDropSchema = z
+  .object({
+    systemType: cableVoltageDropSystemTypeSchema,
+    lengthM: z.number().positive(),
+    baseVoltageV: z.number().positive(),
+    cosPhi: z.number().gt(0).max(1),
+  })
+  .strict();
+
+export const cableLoopImpedanceSchema = z.discriminatedUnion("method", [
+  z.object({ method: z.literal("estimated") }).strict(),
+  z.object({ method: z.literal("calculated"), prospectiveEarthFaultKa: z.number().positive() }).strict(),
+  z.object({ method: z.literal("measured"), sourceImpedanceOhm: z.number().positive() }).strict(),
+]);
+
+export const cableDetailedOptionsSchema = z
+  .object({
+    earthingSystem: z.enum(["TN", "TT"]),
+    circuitRole: z.enum(["final", "distribution"]),
+    breakerCurve: z.enum(["B", "C", "D"]),
+    peLocation: z.enum(["in-cable", "separate"]),
+    conductorArrangement: z.enum(["multicore", "singleCoreTrefoil", "singleCoreFlatTouching"]),
+    parallelConductors: z.number().int().positive().optional(),
+    soilThermalResistivityKmPerW: z.number().positive().optional(),
+    burialDepthM: z.number().positive().optional(),
+    shortCircuit: z
+      .object({ prospectiveFaultKa: z.number().positive(), clearingTimeS: z.number().positive() })
+      .strict()
+      .optional(),
+    loopImpedance: cableLoopImpedanceSchema,
+  })
+  .strict();
+
+export const cableSelectRequestSchema = z
+  .object({
+    mode: z.enum(["standard", "detailed"]),
+    designCurrentA: z.number().positive(),
+    phase: z.union([z.literal(1), z.literal(3)]),
+    circuitKind: z.enum(["power", "signal"]),
+    conductorMaterial: z.enum(["copper", "aluminum"]),
+    insulation: z.enum(["PVC", "XLPE/EPR"]),
+    installationMethod: z.enum(["A1", "A2", "B1", "B2", "C", "D1", "D2"]),
+    ambientTemperatureC: z.number().positive(),
+    groupedCircuits: z.number().int().positive(),
+    groupingArrangement: z.enum(["bunched", "single-layer-tray-horizontal", "buried-in-ducts"]),
+    thirdHarmonicPercent: z.number().min(0),
+    voltageDropLimitPercent: z.number().positive(),
+    voltageDrop: cableSelectVoltageDropSchema,
+    extraCorrectionFactor: z.number().positive().optional(),
+    detailed: cableDetailedOptionsSchema.optional(),
+  })
+  .strict()
+  .refine((v) => v.mode !== "detailed" || v.detailed !== undefined, {
+    message: "detailed mode requires the 'detailed' options block.",
+    path: ["detailed"],
+  });
+
+export const cableSelectResponseSchema = z.object({
+  value: z.record(z.unknown()),
+  warnings: z.array(z.unknown()),
+  assumptions: z.array(z.unknown()),
+  formulaVariant: z.string(),
+  dataVersion: z.string(),
+  engineVersion: z.string(),
+});
+
 export const protectionCatalogEntrySchema = z
   .object({
     id: z.string(),
@@ -709,6 +775,9 @@ export type CableRulerRequest = z.infer<typeof cableRulerRequestSchema>;
 export type CableRulerEntryDto = z.infer<typeof cableRulerEntrySchema>;
 export type CableRulerOutput = z.infer<typeof cableRulerOutputSchema>;
 export type CableRulerResponse = z.infer<typeof cableRulerResponseSchema>;
+
+export type CableSelectRequest = z.infer<typeof cableSelectRequestSchema>;
+export type CableSelectResponse = z.infer<typeof cableSelectResponseSchema>;
 
 export type ProtectionRequest = z.infer<typeof protectionRequestSchema>;
 export type ProtectionCandidate = z.infer<typeof protectionCandidateSchema>;

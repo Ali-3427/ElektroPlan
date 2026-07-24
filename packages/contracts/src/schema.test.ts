@@ -2,6 +2,7 @@ import {
   cableRulerRequestSchema,
   cableRulerResponseSchema,
   cableResponseSchema,
+  cableSelectRequestSchema,
   calculationsExportSchema,
   calculationRecordSchema,
   groupingMetadataSchema,
@@ -935,3 +936,126 @@ assertEqual(materialUnitSchema.parse("paket"), "paket");
   });
   assertEqual(result.materialCategories?.length ?? 0, 1);
 }
+
+// cableSelectRequestSchema — standard mode with minimal required fields
+{
+  const base = {
+    mode: "standard" as const,
+    designCurrentA: 60,
+    phase: 3,
+    circuitKind: "power" as const,
+    conductorMaterial: "copper" as const,
+    insulation: "XLPE/EPR" as const,
+    installationMethod: "C" as const,
+    ambientTemperatureC: 30,
+    groupedCircuits: 1,
+    groupingArrangement: "bunched" as const,
+    thirdHarmonicPercent: 0,
+    voltageDropLimitPercent: 5,
+    voltageDrop: {
+      systemType: "three-phase-ac-ll" as const,
+      lengthM: 25,
+      baseVoltageV: 400,
+      cosPhi: 0.9,
+    },
+  };
+
+  // Test: accepts a valid standard-mode request
+  const parsed = cableSelectRequestSchema.parse(base);
+  assertEqual(parsed.mode, "standard");
+}
+
+// cableSelectRequestSchema — detailed mode with detailed block
+{
+  const base = {
+    mode: "standard" as const,
+    designCurrentA: 60,
+    phase: 3,
+    circuitKind: "power" as const,
+    conductorMaterial: "copper" as const,
+    insulation: "XLPE/EPR" as const,
+    installationMethod: "C" as const,
+    ambientTemperatureC: 30,
+    groupedCircuits: 1,
+    groupingArrangement: "bunched" as const,
+    thirdHarmonicPercent: 0,
+    voltageDropLimitPercent: 5,
+    voltageDrop: {
+      systemType: "three-phase-ac-ll" as const,
+      lengthM: 25,
+      baseVoltageV: 400,
+      cosPhi: 0.9,
+    },
+  };
+
+  // Test: accepts detailed mode with the detailed block
+  const detailedParsed = cableSelectRequestSchema.parse({
+    ...base,
+    mode: "detailed" as const,
+    detailed: {
+      earthingSystem: "TN" as const,
+      circuitRole: "final" as const,
+      breakerCurve: "C" as const,
+      peLocation: "in-cable" as const,
+      conductorArrangement: "multicore" as const,
+      loopImpedance: { method: "estimated" as const },
+    },
+  });
+  assertEqual(detailedParsed.mode, "detailed");
+}
+
+// cableSelectRequestSchema — rejects installation method outside D1/D2 set
+assertThrows(() =>
+  cableSelectRequestSchema.parse({
+    mode: "standard" as const,
+    designCurrentA: 60,
+    phase: 3,
+    circuitKind: "power" as const,
+    conductorMaterial: "copper" as const,
+    insulation: "XLPE/EPR" as const,
+    installationMethod: "E" as const,
+    ambientTemperatureC: 30,
+    groupedCircuits: 1,
+    groupingArrangement: "bunched" as const,
+    thirdHarmonicPercent: 0,
+    voltageDropLimitPercent: 5,
+    voltageDrop: {
+      systemType: "three-phase-ac-ll" as const,
+      lengthM: 25,
+      baseVoltageV: 400,
+      cosPhi: 0.9,
+    },
+  }),
+);
+
+// cableSelectRequestSchema — rejects measured loop impedance without source impedance
+assertThrows(() =>
+  cableSelectRequestSchema.parse({
+    mode: "detailed" as const,
+    designCurrentA: 60,
+    phase: 3,
+    circuitKind: "power" as const,
+    conductorMaterial: "copper" as const,
+    insulation: "XLPE/EPR" as const,
+    installationMethod: "C" as const,
+    ambientTemperatureC: 30,
+    groupedCircuits: 1,
+    groupingArrangement: "bunched" as const,
+    thirdHarmonicPercent: 0,
+    voltageDropLimitPercent: 5,
+    voltageDrop: {
+      systemType: "three-phase-ac-ll" as const,
+      lengthM: 25,
+      baseVoltageV: 400,
+      cosPhi: 0.9,
+    },
+    detailed: {
+      earthingSystem: "TN" as const,
+      circuitRole: "final" as const,
+      breakerCurve: "C" as const,
+      peLocation: "in-cable" as const,
+      conductorArrangement: "multicore" as const,
+      loopImpedance: { method: "measured" as const },
+    },
+  }),
+);

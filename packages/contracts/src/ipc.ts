@@ -8,6 +8,7 @@ export const IPC_CHANNELS = Object.freeze({
   CalcVoltageDrop: "calc:vd",
   CalcVoltageDropGroup: "calc:vd-group",
   CalcCable: "calc:cable",
+  CalcCableSelect: "calc:cable-select",
   CalcCableRuler: "calc:cable-ruler",
   CalcGroupCableSuggest: "calc:group-cable-suggest",
   CalcProtection: "calc:protection",
