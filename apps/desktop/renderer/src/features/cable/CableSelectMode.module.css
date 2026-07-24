@@ -1,0 +1,23 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.advancedCard {
+  border-color: var(--color-primary);
+  border-left-width: 3px;
+  background: var(--color-brand-wash);
+  box-shadow: none;
+}
