@@ -113,4 +113,16 @@ describe("selectCable (detailed mode)", () => {
     expect(r.value.kS).toBe(1);
     expect(r.value.kD).toBe(1);
   });
+
+  it("succeeds and marks shortCircuit as not-applicable when omitted from detailed input", () => {
+    const input = detailed();
+    delete input.detailed!.shortCircuit;
+    const r = selectCable(input);
+    const accepted = r.value.candidateTrace.find((c) => c.accepted);
+    expect(accepted).toBeDefined();
+    const shortCircuitCriterion = accepted!.criteria.find((c) => c.id === "shortCircuit");
+    expect(shortCircuitCriterion).toBeDefined();
+    expect(shortCircuitCriterion!.status).toBe("not-applicable");
+    expect(shortCircuitCriterion!.detail.reason).toBe("no-fault-energy-data");
+  });
 });
