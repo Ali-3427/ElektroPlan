@@ -16,3 +16,4 @@ yarn.lock
 /.agent
 /.claude
 test-results/
+.idea/
