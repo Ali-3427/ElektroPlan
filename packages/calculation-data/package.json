@@ -16,7 +16,7 @@
     "test": "tsc -b && node ./scripts/copy-json.mjs && node ./tests/run-load-json-dataset.mjs && node ./tests/run-iec-datasets.mjs && node ./tests/run-materials-seed.mjs && node ./tests/run-materials-dataset.mjs && vitest run --configLoader native"
   },
   "dependencies": {
-    "@elektroplan/contracts": "file:../contracts",
+    "@elektroplan/contracts": "workspace:*",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

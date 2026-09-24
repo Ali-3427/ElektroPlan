@@ -15,7 +15,7 @@
     "test": "vitest run --pool threads src/index.test.ts src/material-repos.test.ts"
   },
   "dependencies": {
-    "@elektroplan/contracts": "file:../contracts",
+    "@elektroplan/contracts": "workspace:*",
     "@types/better-sqlite3": "^7.6.13",
     "better-sqlite3": "^12.9.0",
     "vitest": "^4.1.4",
