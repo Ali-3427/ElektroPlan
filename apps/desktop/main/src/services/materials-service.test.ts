@@ -11,9 +11,10 @@ function newService() {
   return { db, service: createMaterialsService(db.repositories) };
 }
 
+// Compiled test runs from dist/services/, so walk up to the repo root.
 const FIXTURE_XLSX_PATH = resolve(
-  "docs",
-  "MST malzeme listesi.xlsx",
+  import.meta.dirname,
+  "../../../../../docs/MST malzeme listesi.xlsx",
 );
 
 describe("materials service", () => {
