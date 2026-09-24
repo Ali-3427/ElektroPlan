@@ -2,13 +2,13 @@
   "name": "elektroplan-desktop",
   "version": "1.9.0",
   "private": true,
-  "description": "ElektroPlan â€” Elektrik TesisatÄ± Hesaplama ProgramÄ±",
+  "description": "ElektroPlan — Elektrik Tesisatı Hesaplama Programı",
   "author": "ElektroPlan",
   "main": "apps/desktop/main/dist/index.js",
   "build": {
     "appId": "com.elektroplan.desktop",
     "productName": "ElektroPlan",
-    "copyright": "Copyright Â© 2026 ElektroPlan",
+    "copyright": "Copyright © 2026 ElektroPlan",
     "directories": {
       "app": "bundle",
       "buildResources": "buildResources",

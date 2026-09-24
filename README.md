@@ -4,7 +4,7 @@ Desktop app for electrical engineering calculations, built on **IEC 60364-5-52**
 
 ElektroPlan helps electrical engineers size cables, check motor currents, evaluate voltage drop across full distribution topologies, and coordinate protection devices — all offline, all traceable back to the standard clauses and datasets behind each number.
 
-**Download:** [latest release (v1.8.9)](https://github.com/Ali-3427/ElektropPlan_V2/releases/tag/v1.8.9) — portable exe or Windows installer.
+**Download:** [latest release](https://github.com/Ali-3427/ElektroPlan/releases/latest) — portable exe or Windows installer.
 
 ---
 
@@ -103,7 +103,7 @@ The renderer never touches the filesystem, SQLite, or any Electron API directly 
 
 ```bash
 pnpm install
-pnpm dev       # via turbo, per-app dev scripts
+pnpm --filter @elektroplan/desktop-renderer dev   # renderer only (Vite, no Electron)
 pnpm build
 pnpm test
 pnpm lint

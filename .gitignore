@@ -13,3 +13,6 @@ yarn.lock
 **/yarn.lock
 *.tsbuildinfo
 **/*.tsbuildinfo
+/.agent
+/.claude
+test-results/
