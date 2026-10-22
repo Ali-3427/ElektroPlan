@@ -2,7 +2,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import xlsx from "xlsx";
+import { readSheet } from "read-excel-file/node";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = resolve(HERE, "..");
@@ -72,17 +72,15 @@ export function parseMaterialsWorkbook(rows, options) {
   return { categories, materials, dataVersion };
 }
 
-export function readWorkbookRows(filePath) {
-  const wb = xlsx.readFile(filePath);
-  const sheet = wb.Sheets[wb.SheetNames[0]];
-  return xlsx.utils.sheet_to_json(sheet, { header: 1, defval: null });
+export async function readWorkbookRows(filePath) {
+  return readSheet(filePath);
 }
 
 async function main() {
   const inputPath = process.argv[2] ?? DEFAULT_INPUT;
   const outputPath = process.argv[3] ?? DEFAULT_OUTPUT;
   const dataVersion = `materials-${new Date().toISOString().slice(0, 10)}`;
-  const rows = readWorkbookRows(inputPath);
+  const rows = await readWorkbookRows(inputPath);
   const result = parseMaterialsWorkbook(rows, { dataVersion });
   const payload = {
     metadata: {

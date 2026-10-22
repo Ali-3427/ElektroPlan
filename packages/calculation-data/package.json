@@ -17,9 +17,9 @@
   },
   "dependencies": {
     "@elektroplan/contracts": "workspace:*",
-    "xlsx": "^0.18.5"
+    "read-excel-file": "^9.3.12"
   },
   "devDependencies": {
-    "vitest": "^3.2.7"
+    "vitest": "^4.1.12"
   }
 }

@@ -1,5 +1,5 @@
 import type { Material, MaterialCategory } from "@elektroplan/contracts";
-import xlsx from "xlsx";
+import { readSheet } from "read-excel-file/node";
 
 const TURKISH_MAP: Readonly<Record<string, string>> = {
   "\u00e7": "c",
@@ -81,17 +81,9 @@ export function parseMaterialsWorkbook(
   return { categories, materials, dataVersion };
 }
 
-export function readWorkbookRows(filePath: string): unknown[][] {
-  const workbook = xlsx.readFile(filePath);
-  const sheetName = workbook.SheetNames[0];
-  if (sheetName === undefined) {
-    return [];
-  }
-
-  const sheet = workbook.Sheets[sheetName];
-  if (sheet === undefined) {
-    return [];
-  }
-
-  return xlsx.utils.sheet_to_json(sheet, { header: 1, defval: null });
+// Reads the first sheet as raw rows (empty cells are null). This parses
+// user-picked files, so it must stay on a parser that is still patched —
+// the npm "xlsx" package is frozen at 0.18.5 with known CVEs.
+export async function readWorkbookRows(filePath: string): Promise<unknown[][]> {
+  return readSheet(filePath);
 }

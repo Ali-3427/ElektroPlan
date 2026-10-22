@@ -25,6 +25,6 @@
     "@elektroplan/calculation-data": "workspace:*"
   },
   "devDependencies": {
-    "vitest": "^3.2.7"
+    "vitest": "^4.1.12"
   }
 }

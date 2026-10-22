@@ -294,7 +294,7 @@ for (const pkg of workspacePackages) {
 }
 
 // 5. Copy runtime node_modules, including transitive deps needed at runtime
-const runtimeDeps = ["better-sqlite3", "zod", "xlsx"];
+const runtimeDeps = ["better-sqlite3", "zod", "read-excel-file"];
 const runtimeDependencyGraph = await collectRuntimeDependencyGraph(runtimeDeps);
 for (const [dep, { srcPath }] of runtimeDependencyGraph) {
   console.log(`Copying runtime dep: ${dep} …`);

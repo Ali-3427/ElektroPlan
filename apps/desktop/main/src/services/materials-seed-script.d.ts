@@ -12,5 +12,5 @@ declare module "@elektroplan/calculation-data/scripts/build-materials-seed.mjs" 
     rows: readonly unknown[][],
     options?: { readonly dataVersion?: string },
   ): ParsedMaterialsWorkbook;
-  export function readWorkbookRows(filePath: string): unknown[][];
+  export function readWorkbookRows(filePath: string): Promise<unknown[][]>;
 }

@@ -194,7 +194,7 @@ export function createMaterialsService(
 
   async function importExcel(params: unknown): Promise<ImportSummary> {
     const parsedParams = importExcelParamsSchema.parse(params);
-    const rows = readWorkbookRows(parsedParams.filePath);
+    const rows = await readWorkbookRows(parsedParams.filePath);
     const parsedWorkbook = parseMaterialsWorkbook(rows, {
       dataVersion: createDataVersion(),
     });
