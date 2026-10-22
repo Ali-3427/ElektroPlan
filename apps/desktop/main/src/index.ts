@@ -6,7 +6,11 @@ import { app, BrowserWindow, ipcMain, session } from "electron";
 import { registerIpcHandlers } from "./ipc/register.js";
 import { createServices, type AppServices } from "./services/index.js";
 
-const isDevelopment = process.env.NODE_ENV === "development";
+// A packaged build must never honor NODE_ENV: otherwise anyone able to set
+// environment variables could point it at an arbitrary dev server URL that
+// the CSP, navigation guard and IPC sender check would then all trust.
+const isDevelopment =
+  !app.isPackaged && process.env.NODE_ENV === "development";
 const devServerUrl =
   process.env.ELECTRON_RENDERER_URL ?? process.env.VITE_DEV_SERVER_URL;
 

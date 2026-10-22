@@ -12,6 +12,6 @@
     "@elektroplan/calculation-core": "workspace:*",
     "@elektroplan/calculation-data": "workspace:*",
     "fast-check": "^3.22.0",
-    "vitest": "^3.1.2"
+    "vitest": "^3.2.7"
   }
 }

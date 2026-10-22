@@ -29,6 +29,7 @@ declare module "electron" {
   }
 
   export const app: {
+    readonly isPackaged: boolean;
     whenReady(): Promise<void>;
     on(
       event: "activate" | "window-all-closed" | "before-quit",
